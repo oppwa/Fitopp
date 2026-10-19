@@ -78,7 +78,7 @@ function def(){return{
  sh:[S('Huevos','Proteínas',2,'docena',0),S('Pechuga de pollo','Proteínas',1.5,'kg',0),S('Trucha (filetes)','Proteínas',2,'und',0),S('Atún','Proteínas',2,'latas',0),
   S('Espinaca','Verduras y frutas',1,'atado',0),S('Tomate','Verduras y frutas',1,'kg',0),S('Plátanos','Verduras y frutas',1,'mano',0),S('Palta','Verduras y frutas',3,'und',0),
   S('Lentejas','Abarrotes',1,'kg',0),S('Arroz','Abarrotes',1,'kg',0),S('Avena','Abarrotes',1,'bolsa',0),S('Fideos','Abarrotes',2,'paq',0)]}}
-let saved,D,tab='w',cfg=null,docRef,today=dn(key()),sel=today;
+let saved,D,tab='r',cfg=null,docRef,today=dn(key()),sel=today;
 function norm(j){j.h=j.h||{};j.pw=j.pw||{};j.g=j.g||{ideal:0,start:0};const m=mon(key());
  if(j.wk!==m){DAYS.forEach(d=>{(j.w[d]||[]).forEach(x=>x.c=x.c.map(()=>false));(j.m[d]||[]).forEach(x=>x.c=false)});(j.sh||[]).forEach(x=>x.b=false);j.wk=m}return j}
 try{saved=localStorage.getItem(KEY)}catch(e){}
@@ -97,7 +97,7 @@ function card(t,v,c){return `<div class="bg-slate-800 border border-slate-700 ro
 
 function render(){
   today=dn(key());
-  $('tabs').innerHTML=[['w','🏋️ Entreno'],['m','🥗 Menú'],['s','🛒 Compras'],['p','⚖️ Peso'],['h','📅 Historial']].map(([k,l])=>`<button onclick="A.tab('${k}')" class="flex-1 shrink-0 px-3 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 ${tab===k?'border-lime-500 text-lime-400':'border-transparent text-slate-400'}">${l}</button>`).join('');
+  $('tabs').innerHTML=[['r','📈 Progreso'],['w','🏋️ Entreno'],['m','🥗 Menú'],['s','🛒 Compras'],['p','⚖️ Peso'],['h','📅 Historial']].map(([k,l])=>`<button onclick="A.tab('${k}')" class="flex-1 shrink-0 px-3 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 ${tab===k?'border-lime-500 text-lime-400':'border-transparent text-slate-400'}">${l}</button>`).join('');
   const sv=SV();let h='';
   if(tab==='w'){
     const list=D.w[sel]||[];
@@ -121,6 +121,7 @@ function render(){
     h+=cats.map(c=>`<h3 class="text-xs uppercase text-slate-400 font-bold mt-4 mb-2">${esc(c)}</h3>`+D.sh.filter(x=>x.cat===c).map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-2 flex items-center gap-3"><button onclick="A.ckS('${x.id}')" class="cb ${x.b?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="font-semibold truncate ${x.b?'line-through text-slate-500':''}">${esc(x.n)}</p><p class="text-xs text-slate-400">${x.q} ${esc(x.un)} ${x.o&&x.o!=='Comprado'?`· <b class="text-lime-400">🌱 ${esc(x.o)} · gratis</b>`:`× ${money(x.u)} = <b class="text-white">${money(x.q*x.u)}</b>`}</p></div><button class="ib" onclick="A.editS('${x.id}')">✏️</button><button class="ib" onclick="A.del('s','${x.id}')">🗑</button></div>`).join('')).join('');
     h+=`<button onclick="A.addS()" class="mt-4 w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir producto</button>`;
   }
+  if(tab==='r')h=rHTML();
   if(tab==='p')h=wHTML();
   if(tab==='h')h=hHTML();
   $('app').innerHTML=h;
@@ -138,6 +139,21 @@ function wHTML(){const ks=wk(),k=key(),cur=ks.length?D.pw[ks[ks.length-1]]:0,g=D
  if(pts.length>1){const v=pts.map(p=>p[1]).concat(id?[id]:[]),mn=Math.min(...v)-0.5,mx=Math.max(...v)+0.5,X=i=>10+i*(280/(pts.length-1)),Y=y=>110-(y-mn)/(mx-mn)*100;
   h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-4"><svg viewBox="0 0 300 120" class="w-full">${id?`<line x1="10" x2="290" y1="${Y(id)}" y2="${Y(id)}" stroke="#84cc16" stroke-dasharray="4"/>`:''}<polyline fill="none" stroke="#fb923c" stroke-width="2" points="${pts.map((p,i)=>X(i)+','+Y(p[1])).join(' ')}"/>${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p[1])}" r="2.5" fill="#fb923c"/>`).join('')}</svg><p class="text-[11px] text-slate-500 text-center">Últimos ${pts.length} registros · línea verde = peso ideal</p></div>`}
  h+=`<table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Cambio</th><th></th></tr></thead><tbody>${ks.slice().reverse().map(x=>{const i=ks.indexOf(x),d=i?D.pw[x]-D.pw[ks[i-1]]:0;return `<tr class="border-t border-slate-800"><td class="p-2">${dn(x).slice(0,3)} ${show(x)}</td><td class="p-2 text-center font-semibold">${D.pw[x]} kg</td><td class="p-2 text-center ${d>0?'text-orange-400':d<0?'text-lime-400':'text-slate-500'}">${i?(d>0?'+':'')+d.toFixed(1):'—'}</td><td><button class="ib" onclick="A.delP('${x}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros</td></tr>'}</tbody></table>`;return h}
+function rHTML(){const sv=SV(),k=key(),ks=Object.keys(sv.pw).sort(),g=sv.g,ymd=t=>t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+ const days=[];for(let i=13;i>=0;i--){const t=new Date(k+'T12:00:00');t.setDate(t.getDate()-i);days.push(ymd(t))}
+ const rec=days.filter(d=>sv.h[d]),av=f=>rec.length?Math.round(rec.reduce((a,d)=>a+f(sv.h[d]),0)/rec.length):0,pOK=rec.filter(d=>sv.h[d].p>=GOAL).length;
+ let streak=0,t=new Date(k+'T12:00:00');if(!sv.h[k])t.setDate(t.getDate()-1);while(sv.h[ymd(t)]){streak++;t.setDate(t.getDate()-1)}
+ let tot=0,dn_=0;DAYS.forEach(d=>sv.w[d].forEach(x=>{tot+=x.c.length;dn_+=x.c.filter(Boolean).length}));const wp=tot?Math.round(dn_/tot*100):0;
+ const cur=ks.length?sv.pw[ks[ks.length-1]]:0,st=g.start||(ks.length?sv.pw[ks[0]]:0),id=g.ideal,ch=cur&&st?cur-st:0;
+ let pct=0,msg='Registra tu peso y define tu peso ideal en la pestaña ⚖️ Peso.';
+ if(id&&st&&cur&&st!==id){pct=Math.max(0,Math.min(100,(st-cur)/(st-id)*100));const toward=(id<st)?ch<0:ch>0;msg=Math.abs(cur-id)<0.05?'¡Meta cumplida! 🎯':(ch===0?'Aún sin cambio desde el inicio. ¡Constancia!':(toward?'Vas en la dirección correcta 💪':'Te alejaste un poco de la meta. Ajusta y sigue.'))+' Faltan '+Math.abs(cur-id).toFixed(1)+' kg.'}
+ const mx=Math.max(1,...days.map(d=>Math.max(sv.h[d]?.kb||0,sv.h[d]?.kc||0)));
+ const bars=days.map((d,i)=>{const r=sv.h[d]||{kb:0,kc:0},x=i*21+4,H=v=>v/mx*90;return `<rect x="${x}" y="${100-H(r.kc)}" width="8" height="${H(r.kc)}" fill="#64748b"/><rect x="${x+9}" y="${100-H(r.kb)}" width="8" height="${H(r.kb)}" fill="#fb923c"/><text x="${x+9}" y="112" font-size="7" fill="#94a3b8" text-anchor="middle">${d.slice(8)}</text>`}).join('');
+ return `<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between text-sm mb-2"><b>🎯 Tu meta de peso</b><span class="text-lime-400 font-bold">${pct.toFixed(0)}%</span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${msg}</p></div>
+ <div class="grid grid-cols-3 gap-3 mb-3">${card('Peso actual',cur?cur+' kg':'—','text-white')}${card('Cambio total',cur&&st?(ch>0?'+':'')+ch.toFixed(1)+' kg':'—',ch<=0?'text-lime-400':'text-orange-400')}${card('Racha',streak+' día(s)','text-lime-400')}</div>
+ <div class="grid grid-cols-3 gap-3 mb-4">${card('Series semana',wp+'%','text-orange-400')}${card('Meta proteína',pOK+'/'+rec.length+' días','text-lime-400')}${card('Prom. proteína',av(r=>r.p)+' g','text-white')}</div>
+ <div class="bg-slate-800 border border-slate-700 rounded-xl p-3"><b class="text-sm">Últimos 14 días</b><svg viewBox="0 0 300 116" class="w-full mt-2">${bars}</svg><p class="text-[11px] text-slate-400 text-center"><span style="color:#fb923c">■</span> quemadas (prom. ${av(r=>r.kb)} kcal) · <span style="color:#64748b">■</span> consumidas (prom. ${av(r=>r.kc)} kcal)</p></div>
+ <p class="text-xs text-slate-500 mt-3">Se calcula con lo que guardaste (💾). Días con registro en los últimos 14: ${rec.length}.</p>`}
 function hHTML(){const sv=SV(),ks=[...new Set([...Object.keys(sv.h),...Object.keys(sv.pw)])].sort().reverse();
  const rows=ks.map(k=>{const r=sv.h[k],b=r?r.kc-r.kb:null;return `<tr class="border-t border-slate-800"><td class="p-2 whitespace-nowrap">${dn(k).slice(0,3)} ${show(k)}</td><td class="p-2 text-center">${sv.pw[k]?sv.pw[k]+' kg':'—'}</td><td class="p-2 text-center text-orange-400">${r?r.kb:'—'}</td><td class="p-2 text-center">${r?r.kc:'—'}</td><td class="p-2 text-center ${b>0?'text-orange-400':'text-lime-400'}">${r?(b>0?'+':'')+b:'—'}</td><td class="p-2 text-center text-lime-400">${r?r.p+' g':'—'}</td></tr>`}).join('');
  return `<p class="text-xs text-slate-400 mb-3">Se guarda un resumen del día cada vez que pulsas 💾 Guardar. Fechas con calendario de Perú (America/Lima). Balance = kcal consumidas − quemadas.</p><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Quemadas</th><th class="p-2">Consumidas</th><th class="p-2">Balance</th><th class="p-2">Proteína</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="p-6 text-center text-slate-500">Aún no hay historial. Marca tus checks y pulsa Guardar.</td></tr>'}</tbody></table></div>`}
