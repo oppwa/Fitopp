@@ -4,82 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaliFit - Panel de Control</title>
+    <!-- Tailwind CSS para un diseño moderno y responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        neon: '#39ff14',
+                        neonhover: '#32e612'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #121212; --card: #1e1e1e; --neon: #39ff14; --text: #ffffff; --gray: #888888; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
-        .header { padding: 20px; text-align: center; border-bottom: 1px solid #333; }
-        .header h1 { margin: 0; color: var(--neon); text-transform: uppercase; letter-spacing: 2px; }
-        .tabs { display: flex; justify-content: space-around; background: var(--card); padding: 15px 0; position: fixed; bottom: 0; width: 100%; border-top: 1px solid #333; }
-        .tab { background: none; border: none; color: var(--gray); font-size: 16px; cursor: pointer; font-weight: bold; }
-        .tab.active { color: var(--neon); }
-        .content { display: none; padding: 20px; max-width: 600px; margin: 0 auto; }
-        .content.active { display: block; }
-        .card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon); }
-        .day-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 18px; font-weight: bold; }
-        .day-body { display: none; margin-top: 15px; }
+        body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; }
+        .neon-text { color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.3); }
+        .neon-border { border-left: 4px solid #39ff14; }
+        input[type="checkbox"] { 
+            appearance: none; background-color: #334155; margin: 0; font: inherit; 
+            color: currentColor; width: 1.5em; height: 1.5em; border-radius: 0.25em; 
+            display: grid; place-content: center; cursor: pointer; transition: 0.2s;
+        }
+        input[type="checkbox"]::before {
+            content: ""; width: 0.8em; height: 0.8em; transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #39ff14;
+            background-color: #39ff14;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        input[type="checkbox"]:checked::before { transform: scale(1); }
+        .day-body { display: none; transition: all 0.3s ease; }
         .day-body.open { display: block; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #333; }
-        .item-row:last-child { border-bottom: none; }
-        .checkbox-container { display: flex; align-items: center; gap: 10px; }
-        input[type="checkbox"] { accent-color: var(--neon); width: 20px; height: 20px; }
-        .stats { font-size: 12px; color: var(--gray); }
-        .btn-add { background: transparent; border: 1px dashed var(--neon); color: var(--neon); padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .progress-container { background: #333; border-radius: 10px; height: 10px; margin-top: 5px; overflow: hidden; }
-        .progress-bar { background: var(--neon); height: 100%; width: 0%; transition: width 0.3s; }
-        .summary-card { background: var(--card); text-align: center; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .summary-card span { display: block; font-size: 24px; font-weight: bold; color: var(--neon); }
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn.active { color: #39ff14; transform: translateY(-3px); }
+        .content-section { display: none; animation: fadeIn 0.3s; }
+        .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
+<body class="antialiased min-h-screen">
 
-    <div class="header">
-        <h1>WaliFit Tracker</h1>
-    </div>
+    <!-- Header -->
+    <header class="bg-cardbg shadow-lg shadow-black/20 p-5 text-center sticky top-0 z-10">
+        <h1 class="text-2xl font-black tracking-widest uppercase neon-text flex items-center justify-center gap-2">
+            <i class="fa-solid fa-bolt"></i> WaliFit
+        </h1>
+        <p class="text-slate-400 text-xs mt-1">Tracker de Progreso</p>
+    </header>
 
-    <!-- Pestaña Ejercicios -->
-    <div id="tab-ejercicios" class="content active">
-        <h2 style="color: var(--neon);">Rutina Semanal</h2>
-        <div id="ejercicios-container"></div>
-    </div>
+    <main class="max-w-2xl mx-auto p-4">
+        
+        <!-- Pestaña Ejercicios -->
+        <div id="tab-ejercicios" class="content-section active">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-dumbbell neon-text"></i> Rutina Semanal</h2>
+            <div id="ejercicios-container" class="space-y-4"></div>
+        </div>
 
-    <!-- Pestaña Alimentación -->
-    <div id="tab-alimentacion" class="content">
-        <div class="summary-card">
-            Objetivo Diario: 140g Proteína | Calorías Déficit
-            <div style="display: flex; justify-content: space-around; margin-top: 10px;">
-                <div><span id="total-cal">0</span>kcal hoy</div>
-                <div><span id="total-pro">0</span>g prot hoy</div>
+        <!-- Pestaña Alimentación -->
+        <div id="tab-alimentacion" class="content-section">
+            <div class="bg-cardbg rounded-xl p-5 mb-6 shadow-lg border border-slate-700 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-chart-pie text-6xl text-neon"></i></div>
+                <h3 class="text-lg font-bold mb-1 relative z-10">Objetivo Diario</h3>
+                <p class="text-slate-400 text-sm mb-4 relative z-10">140g Proteína | Déficit Calórico</p>
+                
+                <div class="flex justify-between items-end mb-2 relative z-10">
+                    <div><span id="total-cal" class="text-3xl font-black text-white">0</span> <span class="text-slate-400 text-sm">kcal hoy</span></div>
+                    <div class="text-right"><span id="total-pro" class="text-3xl font-black neon-text">0</span> <span class="text-slate-400 text-sm">g prot</span></div>
+                </div>
+                
+                <div class="w-full bg-slate-800 rounded-full h-3 relative z-10">
+                    <div id="prot-progress" class="bg-neon h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
             </div>
-            <div class="progress-container"><div id="prot-progress" class="progress-bar"></div></div>
+            
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-utensils neon-text"></i> Menú Semanal</h2>
+            <div id="alimentacion-container" class="space-y-4"></div>
         </div>
-        <div id="alimentacion-container"></div>
-    </div>
 
-    <!-- Pestaña Compras -->
-    <div id="tab-compras" class="content">
-        <h2 style="color: var(--neon);">Lista de Compras</h2>
-        <div class="card">
-            <ul style="line-height: 1.8; color: #ccc;">
-                <li>🍗 Pechuga de pollo (aprox 2 kg)</li>
-                <li>🥚 Cartón de huevos (30 uds)</li>
-                <li>🐟 Trucha (filetes frescos) y 2 latas de atún</li>
-                <li>🥩 Lentejitas (1 bolsa) y Fideos Longkou</li>
-                <li>🥦 Brócoli, Espinaca, Tomate, Cebolla, Vainitas</li>
-                <li>🍌 Plátanos, Manzanas/Piña</li>
-                <li>🥛 Yogur Griego y Avena</li>
-                <li>🌱 Raíz de Kión y Flor de Jamaica</li>
-            </ul>
+        <!-- Pestaña Compras -->
+        <div id="tab-compras" class="content-section">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-cart-shopping neon-text"></i> Lista de Compras</h2>
+            <div class="bg-cardbg rounded-xl p-6 shadow-lg border border-slate-700">
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🍗 Pechuga de pollo (aprox 2 kg)</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥚 Cartón de huevos (30 uds)</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🐟 Trucha (filetes frescos) y Atún</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥩 Lentejitas y Fideos Longkou</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥦 Brócoli, Espinaca, Tomate, Vainitas</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🍌 Plátanos, Manzanas/Piña</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥛 Yogur Griego y Avena</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🌱 Raíz de Kión y Flor de Jamaica</li>
+                </ul>
+            </div>
         </div>
-    </div>
+
+    </main>
 
     <!-- Navegación Inferior -->
-    <div class="tabs">
-        <button class="tab active" onclick="switchTab('ejercicios')">💪 Ejercicios</button>
-        <button class="tab" onclick="switchTab('alimentacion')">🥗 Alimentación</button>
-        <button class="tab" onclick="switchTab('compras')">🛒 Compras</button>
-    </div>
+    <nav class="bg-cardbg border-t border-slate-800 fixed bottom-0 w-full px-6 py-3 shadow-[0_-10px_20px_rgba(0,0,0,0.3)] z-50">
+        <div class="flex justify-between items-center max-w-sm mx-auto">
+            <button class="tab-btn active flex flex-col items-center gap-1 text-slate-400" onclick="switchTab('ejercicios')">
+                <i class="fa-solid fa-dumbbell text-xl"></i>
+                <span class="text-[10px] uppercase font-bold tracking-wider">Rutina</span>
+            </button>
+            <button class="tab-btn flex flex-col items-center gap-1 text-slate-400" onclick="switchTab('alimentacion')">
+                <i class="fa-solid fa-utensils text-xl"></i>
+                <span class="text-[10px] uppercase font-bold tracking-wider">Dieta</span>
+            </button>
+            <button class="tab-btn flex flex-col items-center gap-1 text-slate-400" onclick="switchTab('compras')">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+                <span class="text-[10px] uppercase font-bold tracking-wider">Compras</span>
+            </button>
+        </div>
+    </nav>
 
-    <!-- Firebase y Lógica de la App -->
+    <!-- Firebase y Lógica -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -97,7 +143,7 @@
         const db = getFirestore(app);
         const docRef = doc(db, "walifit", "mi_progreso");
 
-        // Base de datos inicial por defecto
+        // Base de datos inicial
         const defaultState = {
             ejercicios: {
                 "Lunes: Piernas y Core": [
@@ -145,58 +191,69 @@
                     { id: "a10", nombre: "Desayuno: Batido yogur + avena", cal: 350, pro: 20, done: false },
                     { id: "a11", nombre: "Almuerzo: Estofado de pollo", cal: 550, pro: 35, done: false },
                     { id: "a12", nombre: "Cena: Trucha + Vainitas", cal: 350, pro: 35, done: false }
+                ],
+                "Viernes": [
+                    { id: "a13", nombre: "Desayuno: 3 huevos revueltos + plátano", cal: 350, pro: 20, done: false },
+                    { id: "a14", nombre: "Almuerzo: Pollo asado + arroz + ensalada", cal: 600, pro: 40, done: false },
+                    { id: "a15", nombre: "Cena: Sopa ligera con fideos y pollo (Post-Fútbol)", cal: 300, pro: 25, done: false }
                 ]
             }
         };
 
         let state = defaultState;
 
-        // Cargar datos de Firebase
+        // ESTE ARRAY FUERZA EL ORDEN CRONOLÓGICO
+        const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
         async function loadData() {
             try {
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    state = docSnap.data();
+                    // Combinamos los datos de Firebase con el defaultState para no perder los viernes u otros días si Firebase tenía datos viejos
+                    const fbData = docSnap.data();
+                    state = { ...defaultState, ...fbData };
                 } else {
-                    await saveData(); // Guarda el default la primera vez
+                    await saveData(); 
                 }
                 renderApp();
             } catch (error) {
-                console.error("Error al cargar Firebase. Revisa tus credenciales.", error);
+                console.error("Error cargando datos", error);
             }
         }
 
-        // Guardar datos en Firebase
         window.saveData = async function() {
             try {
                 await setDoc(docRef, state);
                 updateStats();
             } catch (error) {
-                console.error("Error al guardar", error);
+                console.error("Error guardando", error);
             }
         }
 
-        // Cambiar pestañas
         window.switchTab = function(tabId) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             event.currentTarget.classList.add('active');
         }
 
-        // Desplegar el día (Acordeón)
         window.toggleDay = function(id) {
-            document.getElementById(id).classList.toggle('open');
+            const el = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            el.classList.toggle('open');
+            if(el.classList.contains('open')){
+                icon.style.transform = "rotate(180deg)";
+            } else {
+                icon.style.transform = "rotate(0deg)";
+            }
         }
 
-        // Marcar Checkbox
         window.toggleCheck = function(category, day, index) {
             state[category][day][index].done = !state[category][day][index].done;
             saveData();
             updateStats();
         }
 
-        // Agregar comida extra
         window.addExtra = function(day) {
             const nombre = prompt("¿Qué comiste extra? (Ej: Manzana, Galleta)");
             if (!nombre) return;
@@ -204,72 +261,104 @@
             const pro = parseInt(prompt("¿Cuántos gramos de proteína tiene? (Ej: 2)") || "0");
             
             const newId = "extra_" + Date.now();
+            if(!state.alimentacion[day]) state.alimentacion[day] = [];
             state.alimentacion[day].push({ id: newId, nombre: `Extra: ${nombre}`, cal, pro, done: true });
             saveData();
             renderApp();
         }
 
         function renderApp() {
-            // Render Ejercicios
+            // Render Ejercicios Respetando el Orden
             let htmlE = '';
-            for (const [dia, items] of Object.entries(state.ejercicios)) {
-                let id = dia.replace(/\s+/g, '');
-                htmlE += `<div class="card">
-                    <div class="day-header" onclick="toggleDay('${id}')">${dia} <span>▼</span></div>
-                    <div class="day-body" id="${id}">`;
-                items.forEach((item, i) => {
-                    htmlE += `<div class="item-row">
-                        <div class="checkbox-container">
-                            <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck('ejercicios', '${dia}', ${i})">
-                            <div>
-                                <div>${item.nombre}</div>
-                                <div class="stats">${item.repeticiones}</div>
-                            </div>
+            diasOrden.forEach(diaKey => {
+                const fullKey = Object.keys(state.ejercicios).find(k => k.startsWith(diaKey));
+                if(fullKey) {
+                    const items = state.ejercicios[fullKey];
+                    let id = fullKey.replace(/\s+/g, '').replace(':','');
+                    htmlE += `<div class="bg-cardbg rounded-xl mb-4 shadow-md neon-border overflow-hidden">
+                        <div class="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-800 transition" onclick="toggleDay('${id}')">
+                            <h3 class="font-bold text-lg">${fullKey}</h3>
+                            <i id="icon-${id}" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
                         </div>
-                    </div>`;
-                });
-                htmlE += `</div></div>`;
-            }
+                        <div class="day-body px-4 pb-4" id="${id}">
+                            <div class="space-y-3 mt-2">`;
+                    items.forEach((item, i) => {
+                        htmlE += `<label class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 cursor-pointer border border-slate-700/50">
+                            <div class="flex items-center gap-4">
+                                <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck('ejercicios', '${fullKey}', ${i})">
+                                <div>
+                                    <div class="font-medium ${item.done ? 'text-slate-400 line-through' : 'text-white'}">${item.nombre}</div>
+                                    <div class="text-xs text-neon mt-0.5"><i class="fa-solid fa-rotate-right mr-1"></i>${item.repeticiones}</div>
+                                </div>
+                            </div>
+                        </label>`;
+                    });
+                    htmlE += `</div></div></div>`;
+                }
+            });
             document.getElementById('ejercicios-container').innerHTML = htmlE;
 
-            // Render Alimentación
+            // Render Alimentación Respetando el Orden
             let htmlA = '';
-            for (const [dia, items] of Object.entries(state.alimentacion)) {
-                let id = 'ali_' + dia;
-                htmlA += `<div class="card">
-                    <div class="day-header" onclick="toggleDay('${id}')">${dia} <span>▼</span></div>
-                    <div class="day-body" id="${id}">`;
-                items.forEach((item, i) => {
-                    htmlA += `<div class="item-row">
-                        <div class="checkbox-container">
-                            <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck('alimentacion', '${dia}', ${i})">
-                            <div>
-                                <div>${item.nombre}</div>
-                                <div class="stats">${item.cal} kcal | ${item.pro}g prot</div>
-                            </div>
+            diasOrden.forEach(diaKey => {
+                if(state.alimentacion[diaKey]) {
+                    const items = state.alimentacion[diaKey];
+                    let id = 'ali_' + diaKey;
+                    htmlA += `<div class="bg-cardbg rounded-xl mb-4 shadow-md neon-border overflow-hidden">
+                        <div class="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-800 transition" onclick="toggleDay('${id}')">
+                            <h3 class="font-bold text-lg">${diaKey}</h3>
+                            <i id="icon-${id}" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
                         </div>
-                    </div>`;
-                });
-                htmlA += `<button class="btn-add" onclick="addExtra('${dia}')">➕ Agregar Extra</button>`;
-                htmlA += `</div></div>`;
-            }
+                        <div class="day-body px-4 pb-4" id="${id}">
+                            <div class="space-y-3 mt-2">`;
+                    items.forEach((item, i) => {
+                        htmlA += `<label class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 cursor-pointer border border-slate-700/50">
+                            <div class="flex items-center gap-4">
+                                <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck('alimentacion', '${diaKey}', ${i})">
+                                <div>
+                                    <div class="font-medium ${item.done ? 'text-slate-400 line-through' : 'text-white'} text-sm">${item.nombre}</div>
+                                    <div class="text-xs text-slate-400 mt-1 flex gap-3">
+                                        <span><i class="fa-solid fa-fire text-orange-400"></i> ${item.cal} kcal</span>
+                                        <span class="text-neon"><i class="fa-solid fa-drumstick-bite"></i> ${item.pro}g</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>`;
+                    });
+                    htmlA += `<button class="w-full mt-3 py-2 rounded-lg border border-dashed border-neon text-neon font-bold hover:bg-neon hover:text-black transition" onclick="addExtra('${diaKey}')">
+                        <i class="fa-solid fa-plus mr-1"></i> Agregar Extra
+                    </button>`;
+                    htmlA += `</div></div></div>`;
+                }
+            });
             document.getElementById('alimentacion-container').innerHTML = htmlA;
             
-            // Expandir el lunes por defecto
-            document.getElementById('Lunes:PiernasyCore').classList.add('open');
-            document.getElementById('ali_Lunes').classList.add('open');
+            // Expandir el día actual si existe
+            const hoyIndex = new Date().getDay(); // 0 es Domingo, 1 es Lunes...
+            const diaActual = diasOrden[hoyIndex === 0 ? 6 : hoyIndex - 1]; // Ajustar índice (Lunes es 0 en nuestro array)
+            
+            // Intentar abrir el día actual
+            const divAliHoy = document.getElementById('ali_' + diaActual);
+            if(divAliHoy) toggleDay('ali_' + diaActual);
+            
+            const divEjerKey = Object.keys(state.ejercicios).find(k => k.startsWith(diaActual));
+            if(divEjerKey) {
+                const id = divEjerKey.replace(/\s+/g, '').replace(':','');
+                const divEjerHoy = document.getElementById(id);
+                if(divEjerHoy) toggleDay(id);
+            }
 
-            updateStats();
+            updateStats(diaActual);
         }
 
-        function updateStats() {
-            // Para tu dashboard, calcularemos los totales basados en el Lunes temporalmente
-            // A futuro esto puede detectar el día actual de la semana
-            const hoy = "Lunes"; 
+        function updateStats(diaCalculo = null) {
+            const hoyIndex = new Date().getDay();
+            const diaActual = diaCalculo || diasOrden[hoyIndex === 0 ? 6 : hoyIndex - 1];
+            
             let tCal = 0; let tPro = 0;
             
-            if(state.alimentacion[hoy]) {
-                state.alimentacion[hoy].forEach(item => {
+            if(state.alimentacion[diaActual]) {
+                state.alimentacion[diaActual].forEach(item => {
                     if(item.done) { tCal += item.cal; tPro += item.pro; }
                 });
             }
