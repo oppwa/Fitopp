@@ -32,6 +32,19 @@ input:focus,select:focus{border-color:#84cc16}
 </header>
 <main class="max-w-3xl mx-auto px-4 py-5" id="app"></main>
 
+<div id="fm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+ <h3 class="font-bold mb-3">Añadir alimento</h3>
+ <label class="block text-xs text-slate-400">Momento<select id="fs"></select></label>
+ <label class="block text-xs text-slate-400 mt-3">Buscar en tu base de alimentos<input id="fq" placeholder="huevo, avena, café..." oninput="A.fsearch()" autocomplete="off"></label>
+ <div id="fr" class="mt-2 max-h-44 overflow-y-auto space-y-1"></div>
+ <div class="grid grid-cols-2 gap-3 mt-3 items-end"><label class="block text-xs text-slate-400">Cantidad (porciones)<input id="fn" type="number" step="0.5" min="0.25" value="1" oninput="A.fprev()"></label><p id="fp" class="text-xs text-lime-400"></p></div>
+ <p id="fe" class="text-red-400 text-xs mt-2 min-h-4"></p>
+ <button type="button" onclick="A.fclose();A.addM()" class="text-xs text-slate-400 underline mb-3">✍️ Ingresar manualmente</button>
+ <div class="flex gap-3"><button type="button" onclick="A.fclose()" class="flex-1 py-2 rounded-lg border border-slate-600">Cancelar</button><button type="button" onclick="A.fok()" class="flex-1 py-2 rounded-lg bg-lime-500 text-slate-900 font-bold">Añadir</button></div></div></div>
+<div id="bm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+ <div class="flex justify-between mb-3"><h3 class="font-bold">📚 Base de alimentos</h3><button class="ib" onclick="A.bclose()">✕</button></div>
+ <input id="bq" placeholder="Buscar..." oninput="A.bl()" class="mb-3"><div id="bl" class="space-y-2"></div>
+ <button onclick="A.newF('')" class="mt-3 w-full py-2 rounded-lg bg-lime-500 text-slate-900 font-bold">＋ Nuevo alimento o plato</button></div></div>
 <div id="modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4">
   <form id="mf" class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm" onsubmit="return A.submit(event)">
     <h3 id="mt" class="font-bold mb-3"></h3><div id="mb" class="space-y-3"></div>
@@ -59,6 +72,9 @@ const mon=k=>{const t=new Date(k+'T12:00:00');t.setDate(t.getDate()-((t.getDay()
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'S/ '+(+n||0).toFixed(2);
+const SLOTS=['Desayuno','Media mañana','Almuerzo','Media tarde','Cena','Snack','Extra'];
+const nz=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const FOODS=()=>[['Huevo sancochado','1 unidad',6,78],['Huevo frito','1 unidad',6,90],['Clara de huevo','1 unidad',4,17],['Avena cocida','1 taza',6,166],['Café negro','1 taza',0,2],['Café con leche','1 taza',4,75],['Leche','1 taza',8,120],['Yogur griego','1 pote (170 g)',17,100],['Plátano','1 unidad',1,105],['Manzana','1 unidad',0.5,95],['Pan integral','1 rebanada',4,80],['Palta','1/2 unidad',1.5,120],['Maní','1 puñado (30 g)',7,170],['Pechuga de pollo','100 g',31,165],['Trucha','100 g',20,140],['Atún en agua','1 lata',25,120],['Lentejas cocidas','1 taza',18,230],['Arroz cocido','1 taza',4,205],['Papa sancochada','1 unidad',3,130],['Fideos cocidos','1 taza',8,220],['Quinua cocida','1 taza',8,220],['Vainitas','1 taza',2,35],['Ensalada mixta','1 plato',2,50],['Estofado de pollo','1 plato',40,550],['Lentejas con pollo','1 plato',50,600]].map(([n,u,p,k])=>({id:uid(),n,u,p,k}));
 const W=(n,s,k)=>({id:uid(),n,s,k,c:Array(s).fill(false)});
 const M=(t,d,p,k)=>({id:uid(),t,d,p,k,c:false});
 const S=(n,cat,q,un,u)=>({id:uid(),n,cat,q,un,u,b:false});
@@ -74,12 +90,12 @@ function def(){return{
   Jueves:[M('Desayuno','Batido yogur griego',25,300),M('Almuerzo','Estofado de pollo',40,550),M('Cena','Trucha + vainitas',35,380)],
   Viernes:[M('Desayuno','Huevos + fruta',20,300),M('Almuerzo','Pollo asado + arroz',45,650),M('Cena','Atún o sopa ligera',25,300)],
   Sábado:[M('Desayuno','Tortilla de huevos',20,300),M('Almuerzo','Libre',30,600),M('Cena','Libre',25,450)],
-  Domingo:[M('Desayuno','Avena + fruta',10,300),M('Almuerzo','Libre',30,600),M('Cena','Ligera',20,350)]},h:{},pw:{},g:{ideal:0,start:0},wk:'',
+  Domingo:[M('Desayuno','Avena + fruta',10,300),M('Almuerzo','Libre',30,600),M('Cena','Ligera',20,350)]},h:{},pw:{},g:{ideal:0,start:0},wk:'',fd:FOODS(),
  sh:[S('Huevos','Proteínas',2,'docena',0),S('Pechuga de pollo','Proteínas',1.5,'kg',0),S('Trucha (filetes)','Proteínas',2,'und',0),S('Atún','Proteínas',2,'latas',0),
   S('Espinaca','Verduras y frutas',1,'atado',0),S('Tomate','Verduras y frutas',1,'kg',0),S('Plátanos','Verduras y frutas',1,'mano',0),S('Palta','Verduras y frutas',3,'und',0),
   S('Lentejas','Abarrotes',1,'kg',0),S('Arroz','Abarrotes',1,'kg',0),S('Avena','Abarrotes',1,'bolsa',0),S('Fideos','Abarrotes',2,'paq',0)]}}
-let saved,D,tab='r',cfg=null,docRef,today=dn(key()),sel=today;
-function norm(j){j.h=j.h||{};j.pw=j.pw||{};j.g=j.g||{ideal:0,start:0};const m=mon(key());
+let fsel=null,saved,D,tab='r',cfg=null,docRef,today=dn(key()),sel=today;
+function norm(j){j.fd=j.fd||FOODS();j.h=j.h||{};j.pw=j.pw||{};j.g=j.g||{ideal:0,start:0};const m=mon(key());
  if(j.wk!==m){DAYS.forEach(d=>{(j.w[d]||[]).forEach(x=>x.c=x.c.map(()=>false));(j.m[d]||[]).forEach(x=>x.c=false)});(j.sh||[]).forEach(x=>x.b=false);j.wk=m}return j}
 try{saved=localStorage.getItem(KEY)}catch(e){}
 if(!saved)saved=JSON.stringify(def());
@@ -106,11 +122,11 @@ function render(){
     h+=`<button onclick="A.addW()" class="w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir ejercicio a ${sel}</button>`;
   }
   if(tab==='m'){
-    const list=D.m[sel]||[],pr=pM(sv.m,today),pct=Math.min(100,pr/GOAL*100);
+    const si=t=>{const i=SLOTS.indexOf(t);return i<0?99:i},list=[...(D.m[sel]||[])].sort((a,b)=>si(a.t)-si(b.t)),pr=pM(sv.m,today),pct=Math.min(100,pr/GOAL*100);
     h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between mb-2"><b>🥩 Proteína hoy (guardado)</b><span><b class="text-lime-400 text-lg">${pr}</b> / ${GOAL} g</span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${pr>=GOAL?'¡Meta alcanzada! 💪':'Faltan '+(GOAL-pr)+' g'} · ${kM(sv.m,today)} kcal consumidas</p></div>`+dayBar();
     h+=`<p class="text-xs text-slate-400 mb-2">${sel}: ${pM(D.m,sel)} g proteína · ${kM(D.m,sel)} kcal (borrador)</p>`;
     h+=list.map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-3 flex items-center gap-3"><button onclick="A.ckM('${x.id}')" class="cb ${x.c?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="text-[11px] uppercase text-slate-500">${esc(x.t)}</p><p class="font-semibold truncate">${esc(x.d)}</p><p class="text-xs"><span class="text-lime-400">${x.p} g prot</span> · <span class="text-slate-400">${x.k} kcal</span></p></div><button class="ib" onclick="A.editM('${x.id}')">✏️</button><button class="ib" onclick="A.del('m','${x.id}')">🗑</button></div>`).join('')||'<p class="text-center text-slate-500 py-8">Sin comidas.</p>';
-    h+=`<button onclick="A.addM()" class="w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir alimento a ${sel}</button>`;
+    h+=`<button onclick="A.addF()" class="w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir alimento a ${sel}</button><button onclick="A.bopen()" class="mt-3 w-full py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300">📚 Mi base de alimentos (${D.fd.length})</button>`;
   }
   if(tab==='s'){
     const tot=r=>D.sh.filter(r).reduce((a,x)=>a+x.q*x.u,0),T=tot(()=>1),B=tot(x=>x.b);
@@ -182,8 +198,24 @@ const A={
  ckS(id){const x=find(D.sh,id);x.b=!x.b;render()},
  addW(){form('Nuevo ejercicio · '+sel,[{k:'n',l:'Nombre',t:'text',req:1},{k:'s',l:'Series',t:'number'},{k:'k',l:'kcal por serie',t:'number'}],{s:3,k:15},v=>D.w[sel].push(W(v.n,v.s||1,v.k)))},
  editW(id){const x=find(D.w[sel],id);form('Editar ejercicio',[{k:'n',l:'Nombre',t:'text',req:1},{k:'s',l:'Series',t:'number'},{k:'k',l:'kcal por serie',t:'number'}],x,v=>{x.n=v.n;x.k=v.k;const s=v.s||1;x.c=Array.from({length:s},(_,i)=>x.c[i]||false);x.s=s})},
- addM(){form('Nuevo alimento · '+sel,[{k:'t',l:'Comida',t:'select',o:['Desayuno','Almuerzo','Cena','Snack','Extra']},{k:'d',l:'Descripción',t:'text',req:1},{k:'p',l:'Proteína (g)',t:'number'},{k:'k',l:'Calorías (kcal)',t:'number'}],{t:'Snack'},v=>D.m[sel].push(M(v.t,v.d,v.p,v.k)))},
- editM(id){const x=find(D.m[sel],id);form('Editar alimento',[{k:'t',l:'Comida',t:'select',o:['Desayuno','Almuerzo','Cena','Snack','Extra']},{k:'d',l:'Descripción',t:'text',req:1},{k:'p',l:'Proteína (g)',t:'number'},{k:'k',l:'Calorías (kcal)',t:'number'}],x,v=>Object.assign(x,v))},
+ addF(){fsel=null;const h=parseInt(new Date().toLocaleString('en-US',{timeZone:'America/Lima',hour:'numeric',hour12:false}))%24;
+  $('fs').innerHTML=SLOTS.map(o=>`<option>${o}</option>`).join('');$('fs').value=h<10?'Desayuno':h<12?'Media mañana':h<15?'Almuerzo':h<18?'Media tarde':'Cena';
+  $('fq').value='';$('fn').value=1;$('fe').textContent='';$('fp').textContent='';A.fsearch();$('fm').classList.remove('hidden')},
+ fclose(){$('fm').classList.add('hidden')},
+ fsearch(){const raw=$('fq').value.trim(),q=nz(raw),l=D.fd.filter(f=>!q||nz(f.n).includes(q)).sort((a,b)=>nz(a.n)<nz(b.n)?-1:1).slice(0,30);
+  $('fr').innerHTML=l.map(f=>`<button type="button" onclick="A.fpick('${f.id}')" class="w-full text-left px-3 py-2 rounded-lg border text-sm ${f.id===fsel?'border-lime-500 bg-lime-500/10':'border-slate-700'}"><b>${esc(f.n)}</b> <span class="text-slate-400">· ${esc(f.u)}</span><br><span class="text-xs text-lime-400">${f.p} g prot · ${f.k} kcal</span></button>`).join('')
+   +(raw&&!D.fd.some(f=>nz(f.n)===q)?`<button type="button" onclick="A.newF(document.getElementById('fq').value)" class="w-full px-3 py-2 rounded-lg border border-dashed border-lime-500 text-lime-400 text-sm">＋ Crear «${esc(raw)}» en la base</button>`:'')},
+ fpick(id){fsel=id;A.fsearch();A.fprev()},
+ fprev(){const f=find(D.fd,fsel),q=parseFloat($('fn').value);$('fp').textContent=f&&q>0?'= '+Math.round(f.p*q*10)/10+' g prot · '+Math.round(f.k*q)+' kcal':''},
+ fok(){const f=find(D.fd,fsel),q=parseFloat($('fn').value);if(!f){$('fe').textContent='Elige un alimento de la lista';return}if(isNaN(q)||q<=0||q>50){$('fe').textContent='Cantidad válida: mayor que 0 y hasta 50';return}
+  D.m[sel].push(M($('fs').value,(q===1?'':q+' × ')+f.n+' ('+f.u+')',Math.round(f.p*q*10)/10,Math.round(f.k*q)));A.fclose();render()},
+ newF(n){form('Nuevo alimento o plato',[{k:'n',l:'Nombre',t:'text',req:1},{k:'u',l:'Porción (1 taza, 1 unidad, 100 g, 1 plato)',t:'text',req:1},{k:'p',l:'Proteína por porción (g)',t:'number'},{k:'k',l:'Calorías por porción (kcal)',t:'number'}],{n:(n||'').trim(),u:'1 unidad'},v=>{const f={id:uid(),n:v.n,u:v.u,p:v.p,k:v.k};D.fd.push(f);fsel=f.id;if(!$('fm').classList.contains('hidden')){A.fsearch();A.fprev()}if(!$('bm').classList.contains('hidden'))A.bl()})},
+ bopen(){$('bq').value='';A.bl();$('bm').classList.remove('hidden')},bclose(){$('bm').classList.add('hidden')},
+ bl(){const q=nz($('bq').value.trim());$('bl').innerHTML=D.fd.filter(f=>!q||nz(f.n).includes(q)).sort((a,b)=>nz(a.n)<nz(b.n)?-1:1).map(f=>`<div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2"><div class="flex-grow min-w-0 text-sm"><b class="truncate block">${esc(f.n)}</b><span class="text-xs text-slate-400">${esc(f.u)} · ${f.p} g prot · ${f.k} kcal</span></div><button class="ib" onclick="A.editF('${f.id}')">✏️</button><button class="ib" onclick="A.delF('${f.id}')">🗑</button></div>`).join('')||'<p class="text-sm text-slate-500 text-center py-4">Sin resultados</p>'},
+ editF(id){const f=find(D.fd,id);form('Editar alimento',[{k:'n',l:'Nombre',t:'text',req:1},{k:'u',l:'Porción',t:'text',req:1},{k:'p',l:'Proteína por porción (g)',t:'number'},{k:'k',l:'Calorías por porción (kcal)',t:'number'}],f,v=>{Object.assign(f,v);A.bl()})},
+ delF(id){if(confirm('¿Eliminar de la base? Las comidas ya añadidas no cambian.')){D.fd=D.fd.filter(x=>x.id!==id);A.bl();render()}},
+ addM(){form('Nuevo alimento · '+sel,[{k:'t',l:'Comida',t:'select',o:SLOTS},{k:'d',l:'Descripción',t:'text',req:1},{k:'p',l:'Proteína (g)',t:'number'},{k:'k',l:'Calorías (kcal)',t:'number'}],{t:'Snack'},v=>D.m[sel].push(M(v.t,v.d,v.p,v.k)))},
+ editM(id){const x=find(D.m[sel],id);form('Editar alimento',[{k:'t',l:'Comida',t:'select',o:SLOTS},{k:'d',l:'Descripción',t:'text',req:1},{k:'p',l:'Proteína (g)',t:'number'},{k:'k',l:'Calorías (kcal)',t:'number'}],x,v=>Object.assign(x,v))},
  addS(){form('Nuevo producto',[{k:'n',l:'Producto',t:'text',req:1},{k:'cat',l:'Categoría',t:'select',o:CATS},{k:'o',l:'Origen (si no es comprado, no lleva precio)',t:'select',o:ORIG},{k:'q',l:'Cantidad',t:'number'},{k:'un',l:'Unidad (kg, und...)',t:'text'},{k:'u',l:'Precio por unidad (S/)',t:'number'}],{q:1,un:'und',o:'Comprado'},v=>{if(v.o!=='Comprado')v.u=0;D.sh.push({id:uid(),b:false,...v})})},
  editS(id){const x=find(D.sh,id);form('Editar producto',[{k:'n',l:'Producto',t:'text',req:1},{k:'cat',l:'Categoría',t:'select',o:[...new Set([...CATS,x.cat])]},{k:'o',l:'Origen (si no es comprado, no lleva precio)',t:'select',o:ORIG},{k:'q',l:'Cantidad',t:'number'},{k:'un',l:'Unidad',t:'text'},{k:'u',l:'Precio por unidad (S/)',t:'number'}],x,v=>{if(v.o!=='Comprado')v.u=0;Object.assign(x,v)})},
  del(t,id){if(!confirm('¿Eliminar este elemento?'))return;if(t==='s')D.sh=D.sh.filter(x=>x.id!==id);else D[t][sel]=D[t][sel].filter(x=>x.id!==id);render()},
