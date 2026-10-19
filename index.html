@@ -1,378 +1,191 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WaliFit - Panel de Control</title>
-    <!-- Tailwind CSS para un diseño moderno y responsive -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkbg: '#0f172a',
-                        cardbg: '#1e293b',
-                        neon: '#39ff14',
-                        neonhover: '#32e612'
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; }
-        .neon-text { color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.3); }
-        .neon-border { border-left: 4px solid #39ff14; }
-        input[type="checkbox"] { 
-            appearance: none; background-color: #334155; margin: 0; font: inherit; 
-            color: currentColor; width: 1.5em; height: 1.5em; border-radius: 0.25em; 
-            display: grid; place-content: center; cursor: pointer; transition: 0.2s;
-        }
-        input[type="checkbox"]::before {
-            content: ""; width: 0.8em; height: 0.8em; transform: scale(0);
-            transition: 120ms transform ease-in-out;
-            box-shadow: inset 1em 1em #39ff14;
-            background-color: #39ff14;
-            transform-origin: center;
-            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-        }
-        input[type="checkbox"]:checked::before { transform: scale(1); }
-        .day-body { display: none; transition: all 0.3s ease; }
-        .day-body.open { display: block; }
-        .tab-btn { transition: all 0.2s; }
-        .tab-btn.active { color: #39ff14; transform: translateY(-3px); }
-        .content-section { display: none; animation: fadeIn 0.3s; }
-        .content-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WaliFit</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{font-family:Inter,system-ui,sans-serif;background:#0f172a;color:#f8fafc;-webkit-tap-highlight-color:transparent}
+.cb{width:26px;height:26px;border:2px solid #475569;border-radius:7px;background:#1e293b;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:transparent;transition:.15s}
+.cb.on{background:#84cc16;border-color:#84cc16;color:#0f172a;font-weight:700}
+.ib{padding:4px 8px;border-radius:8px;font-size:13px;background:#1e293b;border:1px solid #334155}
+.ib:hover{border-color:#84cc16}
+input,select{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px;width:100%;color:#fff;outline:none}
+input:focus,select:focus{border-color:#84cc16}
+</style>
 </head>
-<body class="antialiased min-h-screen">
+<body class="min-h-screen pb-24">
+<header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+  <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+    <h1 class="text-xl font-bold">⚡ Wali<span class="text-lime-500">Fit</span></h1>
+    <div class="flex items-center gap-2">
+      <span id="st" class="text-[11px] text-slate-400"></span><span id="dirty" class="hidden text-xs text-amber-400">● Sin guardar</span>
+      <button onclick="A.save()" id="saveBtn" class="bg-lime-500 text-slate-900 font-bold text-sm px-4 py-2 rounded-lg">💾 Guardar</button>
+      <button onclick="A.menu()" class="ib">⋯</button>
+    </div>
+  </div>
+  <nav class="max-w-3xl mx-auto px-4 flex overflow-x-auto" id="tabs"></nav>
+</header>
+<main class="max-w-3xl mx-auto px-4 py-5" id="app"></main>
 
-    <!-- Header -->
-    <header class="bg-cardbg shadow-lg shadow-black/20 p-5 text-center sticky top-0 z-10">
-        <h1 class="text-2xl font-black tracking-widest uppercase neon-text flex items-center justify-center gap-2">
-            <i class="fa-solid fa-bolt"></i> WaliFit
-        </h1>
-        <p class="text-slate-400 text-xs mt-1">Tracker de Progreso</p>
-    </header>
+<div id="modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4">
+  <form id="mf" class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm" onsubmit="return A.submit(event)">
+    <h3 id="mt" class="font-bold mb-3"></h3><div id="mb" class="space-y-3"></div>
+    <p id="me" class="text-red-400 text-xs mt-2 min-h-4"></p>
+    <div class="flex gap-3 mt-3"><button type="button" onclick="A.close()" class="flex-1 py-2 rounded-lg border border-slate-600">Cancelar</button><button class="flex-1 py-2 rounded-lg bg-lime-500 text-slate-900 font-bold">Aceptar</button></div>
+  </form>
+</div>
+<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-lime-500 text-slate-900 font-semibold text-sm px-4 py-2 rounded-full z-50"></div>
+<input type="file" id="imp" accept=".json" class="hidden">
 
-    <main class="max-w-2xl mx-auto p-4">
-        
-        <!-- Pestaña Ejercicios -->
-        <div id="tab-ejercicios" class="content-section active">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-dumbbell neon-text"></i> Rutina Semanal</h2>
-            <div id="ejercicios-container" class="space-y-4"></div>
-        </div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import{getAuth,signInAnonymously,signInWithCustomToken,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getFirestore,doc,setDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+// Pega aquí tu configuración de Firebase (Consola > Configuración del proyecto > Tus apps). Si la página ya inyecta __firebase_config, se usa esa.
+const FIREBASE_CONFIG={apiKey:"AIzaSyASSRUX3E-bQC4gxpARWchn07HFxTvaDoA",authDomain:"walifit.firebaseapp.com",projectId:"walifit",storageBucket:"walifit.firebasestorage.app",messagingSenderId:"1054547852328",appId:"1:1054547852328:web:33791121eb621ec368c91d"};
+const CFG=typeof __firebase_config!=='undefined'?JSON.parse(__firebase_config):(FIREBASE_CONFIG.apiKey?FIREBASE_CONFIG:null);
+const APPID=typeof __app_id!=='undefined'?__app_id:'wali-fit-app';
+const DAYS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],KEY='walifit_v2',GOAL=145,ORIG=['Comprado','De mi canchón','Regalo','Donado'],CATS=['Proteínas','Verduras y frutas','Abarrotes','Otros'];
+const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Lima'});
+const key=()=>fmt.format(new Date());
+const dn=k=>DAYS[(new Date(k+'T12:00:00').getDay()+6)%7];
+const show=k=>{const[y,m,d]=k.split('-');return d+'/'+m+'/'+y};
+const mon=k=>{const t=new Date(k+'T12:00:00');t.setDate(t.getDate()-((t.getDay()+6)%7));return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'S/ '+(+n||0).toFixed(2);
+const W=(n,s,k)=>({id:uid(),n,s,k,c:Array(s).fill(false)});
+const M=(t,d,p,k)=>({id:uid(),t,d,p,k,c:false});
+const S=(n,cat,q,un,u)=>({id:uid(),n,cat,q,un,u,b:false});
+function def(){return{
+ w:{Lunes:[W('Sentadilla con barra',4,15),W('Prensa',4,15),W('Extensión',3,15),W('Curl isquiotibiales',3,15),W('Crunch abdominal',3,15)],
+  Martes:[W('Dominadas',4,15),W('Remo polea',4,15),W('Remo barra',3,15),W('Curl inclinado',3,15),W('Curl polea',3,15)],
+  Miércoles:[W('Press banca',4,15),W('Aperturas',3,15),W('Press hombros',4,15),W('Elevaciones laterales',3,15),W('Extensión tríceps',4,15),W('Natación (30-40 min)',1,350)],
+  Jueves:[W('Peso muerto',4,15),W('Zancadas',3,15),W('Elevación lateral',3,15),W('Crunch',3,15)],
+  Viernes:[W('Fútbol (partido)',1,350)],Sábado:[W('Caminata / cardio ligero',1,200)],Domingo:[]},
+ m:{Lunes:[M('Desayuno','Huevos (3)',20,250),M('Almuerzo','Lentejas + pollo',50,600),M('Cena','Atún + ensalada',25,300)],
+  Martes:[M('Desayuno','Avena + plátano',10,300),M('Almuerzo','Trucha + papa',45,550),M('Cena','Claras revueltas',20,200)],
+  Miércoles:[M('Desayuno','Pan + palta + huevos',15,400),M('Almuerzo','Fideos + pollo',45,650),M('Cena','Pollo + ensalada',40,400)],
+  Jueves:[M('Desayuno','Batido yogur griego',25,300),M('Almuerzo','Estofado de pollo',40,550),M('Cena','Trucha + vainitas',35,380)],
+  Viernes:[M('Desayuno','Huevos + fruta',20,300),M('Almuerzo','Pollo asado + arroz',45,650),M('Cena','Atún o sopa ligera',25,300)],
+  Sábado:[M('Desayuno','Tortilla de huevos',20,300),M('Almuerzo','Libre',30,600),M('Cena','Libre',25,450)],
+  Domingo:[M('Desayuno','Avena + fruta',10,300),M('Almuerzo','Libre',30,600),M('Cena','Ligera',20,350)]},h:{},pw:{},g:{ideal:0,start:0},wk:'',
+ sh:[S('Huevos','Proteínas',2,'docena',0),S('Pechuga de pollo','Proteínas',1.5,'kg',0),S('Trucha (filetes)','Proteínas',2,'und',0),S('Atún','Proteínas',2,'latas',0),
+  S('Espinaca','Verduras y frutas',1,'atado',0),S('Tomate','Verduras y frutas',1,'kg',0),S('Plátanos','Verduras y frutas',1,'mano',0),S('Palta','Verduras y frutas',3,'und',0),
+  S('Lentejas','Abarrotes',1,'kg',0),S('Arroz','Abarrotes',1,'kg',0),S('Avena','Abarrotes',1,'bolsa',0),S('Fideos','Abarrotes',2,'paq',0)]}}
+let saved,D,tab='w',cfg=null,docRef,today=dn(key()),sel=today;
+function norm(j){j.h=j.h||{};j.pw=j.pw||{};j.g=j.g||{ideal:0,start:0};const m=mon(key());
+ if(j.wk!==m){DAYS.forEach(d=>{(j.w[d]||[]).forEach(x=>x.c=x.c.map(()=>false));(j.m[d]||[]).forEach(x=>x.c=false)});(j.sh||[]).forEach(x=>x.b=false);j.wk=m}return j}
+try{saved=localStorage.getItem(KEY)}catch(e){}
+if(!saved)saved=JSON.stringify(def());
+try{D=norm(JSON.parse(saved))}catch(e){D=norm(def())}
+saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}
+const SV=()=>JSON.parse(saved);
+const dirty=()=>JSON.stringify(D)!==saved;
+const kW=(w,d)=>(w[d]||[]).reduce((a,x)=>a+x.c.filter(Boolean).length*x.k,0);
+const kM=(m,d)=>(m[d]||[]).filter(x=>x.c).reduce((a,x)=>a+x.k,0);
+const pM=(m,d)=>(m[d]||[]).filter(x=>x.c).reduce((a,x)=>a+x.p,0);
+const $=id=>document.getElementById(id);
 
-        <!-- Pestaña Alimentación -->
-        <div id="tab-alimentacion" class="content-section">
-            <div class="bg-cardbg rounded-xl p-5 mb-6 shadow-lg border border-slate-700 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-chart-pie text-6xl text-neon"></i></div>
-                <h3 class="text-lg font-bold mb-1 relative z-10">Objetivo Diario</h3>
-                <p class="text-slate-400 text-sm mb-4 relative z-10">140g Proteína | Déficit Calórico</p>
-                
-                <div class="flex justify-between items-end mb-2 relative z-10">
-                    <div><span id="total-cal" class="text-3xl font-black text-white">0</span> <span class="text-slate-400 text-sm">kcal hoy</span></div>
-                    <div class="text-right"><span id="total-pro" class="text-3xl font-black neon-text">0</span> <span class="text-slate-400 text-sm">g prot</span></div>
-                </div>
-                
-                <div class="w-full bg-slate-800 rounded-full h-3 relative z-10">
-                    <div id="prot-progress" class="bg-neon h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-            
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-utensils neon-text"></i> Menú Semanal</h2>
-            <div id="alimentacion-container" class="space-y-4"></div>
-        </div>
+function dayBar(){return `<div class="flex gap-2 overflow-x-auto pb-3 mb-3">${DAYS.map(d=>`<button onclick="A.day('${d}')" class="shrink-0 px-3 py-1.5 rounded-full text-sm font-semibold border ${d===sel?'bg-lime-500 text-slate-900 border-lime-500':'border-slate-700 text-slate-300'}">${d.slice(0,3)}${d===today?' •':''}</button>`).join('')}</div>`}
+function card(t,v,c){return `<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center"><p class="text-[11px] uppercase text-slate-400">${t}</p><p class="text-xl font-bold ${c}">${v}</p></div>`}
 
-        <!-- Pestaña Compras -->
-        <div id="tab-compras" class="content-section">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-cart-shopping neon-text"></i> Lista de Compras</h2>
-            <div class="bg-cardbg rounded-xl p-6 shadow-lg border border-slate-700">
-                <ul class="space-y-3 text-slate-300">
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🍗 Pechuga de pollo (aprox 2 kg)</li>
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥚 Cartón de huevos (30 uds)</li>
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🐟 Trucha (filetes frescos) y Atún</li>
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥩 Lentejitas y Fideos Longkou</li>
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥦 Brócoli, Espinaca, Tomate, Vainitas</li>
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🍌 Plátanos, Manzanas/Piña</li>
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🥛 Yogur Griego y Avena</li>
-                    <li class="flex items-center gap-3"><i class="fa-solid fa-check text-slate-600"></i> 🌱 Raíz de Kión y Flor de Jamaica</li>
-                </ul>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Navegación Inferior -->
-    <nav class="bg-cardbg border-t border-slate-800 fixed bottom-0 w-full px-6 py-3 shadow-[0_-10px_20px_rgba(0,0,0,0.3)] z-50">
-        <div class="flex justify-between items-center max-w-sm mx-auto">
-            <button class="tab-btn active flex flex-col items-center gap-1 text-slate-400" onclick="switchTab('ejercicios')">
-                <i class="fa-solid fa-dumbbell text-xl"></i>
-                <span class="text-[10px] uppercase font-bold tracking-wider">Rutina</span>
-            </button>
-            <button class="tab-btn flex flex-col items-center gap-1 text-slate-400" onclick="switchTab('alimentacion')">
-                <i class="fa-solid fa-utensils text-xl"></i>
-                <span class="text-[10px] uppercase font-bold tracking-wider">Dieta</span>
-            </button>
-            <button class="tab-btn flex flex-col items-center gap-1 text-slate-400" onclick="switchTab('compras')">
-                <i class="fa-solid fa-cart-shopping text-xl"></i>
-                <span class="text-[10px] uppercase font-bold tracking-wider">Compras</span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Firebase y Lógica -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyASSRUX3E-bQC4gxpARWchn07HFxTvaDoA",
-            authDomain: "walifit.firebaseapp.com",
-            projectId: "walifit",
-            storageBucket: "walifit.firebasestorage.app",
-            messagingSenderId: "1054547852328",
-            appId: "1:1054547852328:web:33791121eb621ec368c91d"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const docRef = doc(db, "walifit", "mi_progreso");
-
-        // Base de datos inicial
-        const defaultState = {
-            ejercicios: {
-                "Lunes: Piernas y Core": [
-                    { id: "e1", nombre: "Sentadilla con barra", repeticiones: "4x12", done: false },
-                    { id: "e2", nombre: "Prensa de piernas", repeticiones: "4x12", done: false },
-                    { id: "e3", nombre: "Extensión de Piernas", repeticiones: "3x15", done: false },
-                    { id: "e4", nombre: "Curl de Piernas", repeticiones: "3x12", done: false },
-                    { id: "e5", nombre: "Crunch en máquina", repeticiones: "3x20", done: false }
-                ],
-                "Martes: Espalda y Bíceps": [
-                    { id: "e6", nombre: "Dominadas / Asistidas", repeticiones: "4 al fallo", done: false },
-                    { id: "e7", nombre: "Remo sentado en polea", repeticiones: "4x12", done: false },
-                    { id: "e8", nombre: "Remo con barra", repeticiones: "3x10", done: false },
-                    { id: "e9", nombre: "Curl de bíceps", repeticiones: "3x12", done: false }
-                ],
-                "Miércoles: Pecho, Hombros, Tríceps": [
-                    { id: "e10", nombre: "Press de banca", repeticiones: "4x10", done: false },
-                    { id: "e11", nombre: "Press de hombros", repeticiones: "4x12", done: false },
-                    { id: "e12", nombre: "Extensión de tríceps", repeticiones: "4x15", done: false },
-                    { id: "e13", nombre: "Natación (Piscina)", repeticiones: "30 min", done: false }
-                ],
-                "Jueves: Full Body": [
-                    { id: "e14", nombre: "Peso muerto rumano", repeticiones: "4x10", done: false },
-                    { id: "e15", nombre: "Zancadas", repeticiones: "3x12", done: false },
-                    { id: "e16", nombre: "Elevación lateral polea", repeticiones: "3x12", done: false }
-                ]
-            },
-            alimentacion: {
-                "Lunes": [
-                    { id: "a1", nombre: "Desayuno: 3 huevos + espinaca", cal: 350, pro: 20, done: false },
-                    { id: "a2", nombre: "Almuerzo: Lentejitas + Pollo", cal: 600, pro: 45, done: false },
-                    { id: "a3", nombre: "Cena: Ensalada + Atún", cal: 250, pro: 25, done: false }
-                ],
-                "Martes": [
-                    { id: "a4", nombre: "Desayuno: Avena + Plátano", cal: 300, pro: 10, done: false },
-                    { id: "a5", nombre: "Almuerzo: Trucha + Brócoli + Papa", cal: 500, pro: 40, done: false },
-                    { id: "a6", nombre: "Cena: Revuelto de claras", cal: 200, pro: 18, done: false }
-                ],
-                "Miércoles": [
-                    { id: "a7", nombre: "Desayuno: Pan + Palta + Huevos", cal: 400, pro: 15, done: false },
-                    { id: "a8", nombre: "Almuerzo: Fideos Longkou + Pollo", cal: 550, pro: 35, done: false },
-                    { id: "a9", nombre: "Cena: Pollo + Ensalada", cal: 300, pro: 30, done: false }
-                ],
-                "Jueves": [
-                    { id: "a10", nombre: "Desayuno: Batido yogur + avena", cal: 350, pro: 20, done: false },
-                    { id: "a11", nombre: "Almuerzo: Estofado de pollo", cal: 550, pro: 35, done: false },
-                    { id: "a12", nombre: "Cena: Trucha + Vainitas", cal: 350, pro: 35, done: false }
-                ],
-                "Viernes": [
-                    { id: "a13", nombre: "Desayuno: 3 huevos revueltos + plátano", cal: 350, pro: 20, done: false },
-                    { id: "a14", nombre: "Almuerzo: Pollo asado + arroz + ensalada", cal: 600, pro: 40, done: false },
-                    { id: "a15", nombre: "Cena: Sopa ligera con fideos y pollo (Post-Fútbol)", cal: 300, pro: 25, done: false }
-                ]
-            }
-        };
-
-        let state = defaultState;
-
-        // ESTE ARRAY FUERZA EL ORDEN CRONOLÓGICO
-        const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-
-        async function loadData() {
-            try {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    // Combinamos los datos de Firebase con el defaultState para no perder los viernes u otros días si Firebase tenía datos viejos
-                    const fbData = docSnap.data();
-                    state = { ...defaultState, ...fbData };
-                } else {
-                    await saveData(); 
-                }
-                renderApp();
-            } catch (error) {
-                console.error("Error cargando datos", error);
-            }
-        }
-
-        window.saveData = async function() {
-            try {
-                await setDoc(docRef, state);
-                updateStats();
-            } catch (error) {
-                console.error("Error guardando", error);
-            }
-        }
-
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.content-section').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        window.toggleDay = function(id) {
-            const el = document.getElementById(id);
-            const icon = document.getElementById('icon-' + id);
-            el.classList.toggle('open');
-            if(el.classList.contains('open')){
-                icon.style.transform = "rotate(180deg)";
-            } else {
-                icon.style.transform = "rotate(0deg)";
-            }
-        }
-
-        window.toggleCheck = function(category, day, index) {
-            state[category][day][index].done = !state[category][day][index].done;
-            saveData();
-            updateStats();
-        }
-
-        window.addExtra = function(day) {
-            const nombre = prompt("¿Qué comiste extra? (Ej: Manzana, Galleta)");
-            if (!nombre) return;
-            const cal = parseInt(prompt("¿Cuántas calorías estimas? (Ej: 80)") || "0");
-            const pro = parseInt(prompt("¿Cuántos gramos de proteína tiene? (Ej: 2)") || "0");
-            
-            const newId = "extra_" + Date.now();
-            if(!state.alimentacion[day]) state.alimentacion[day] = [];
-            state.alimentacion[day].push({ id: newId, nombre: `Extra: ${nombre}`, cal, pro, done: true });
-            saveData();
-            renderApp();
-        }
-
-        function renderApp() {
-            // Render Ejercicios Respetando el Orden
-            let htmlE = '';
-            diasOrden.forEach(diaKey => {
-                const fullKey = Object.keys(state.ejercicios).find(k => k.startsWith(diaKey));
-                if(fullKey) {
-                    const items = state.ejercicios[fullKey];
-                    let id = fullKey.replace(/\s+/g, '').replace(':','');
-                    htmlE += `<div class="bg-cardbg rounded-xl mb-4 shadow-md neon-border overflow-hidden">
-                        <div class="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-800 transition" onclick="toggleDay('${id}')">
-                            <h3 class="font-bold text-lg">${fullKey}</h3>
-                            <i id="icon-${id}" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
-                        </div>
-                        <div class="day-body px-4 pb-4" id="${id}">
-                            <div class="space-y-3 mt-2">`;
-                    items.forEach((item, i) => {
-                        htmlE += `<label class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 cursor-pointer border border-slate-700/50">
-                            <div class="flex items-center gap-4">
-                                <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck('ejercicios', '${fullKey}', ${i})">
-                                <div>
-                                    <div class="font-medium ${item.done ? 'text-slate-400 line-through' : 'text-white'}">${item.nombre}</div>
-                                    <div class="text-xs text-neon mt-0.5"><i class="fa-solid fa-rotate-right mr-1"></i>${item.repeticiones}</div>
-                                </div>
-                            </div>
-                        </label>`;
-                    });
-                    htmlE += `</div></div></div>`;
-                }
-            });
-            document.getElementById('ejercicios-container').innerHTML = htmlE;
-
-            // Render Alimentación Respetando el Orden
-            let htmlA = '';
-            diasOrden.forEach(diaKey => {
-                if(state.alimentacion[diaKey]) {
-                    const items = state.alimentacion[diaKey];
-                    let id = 'ali_' + diaKey;
-                    htmlA += `<div class="bg-cardbg rounded-xl mb-4 shadow-md neon-border overflow-hidden">
-                        <div class="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-800 transition" onclick="toggleDay('${id}')">
-                            <h3 class="font-bold text-lg">${diaKey}</h3>
-                            <i id="icon-${id}" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
-                        </div>
-                        <div class="day-body px-4 pb-4" id="${id}">
-                            <div class="space-y-3 mt-2">`;
-                    items.forEach((item, i) => {
-                        htmlA += `<label class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 cursor-pointer border border-slate-700/50">
-                            <div class="flex items-center gap-4">
-                                <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleCheck('alimentacion', '${diaKey}', ${i})">
-                                <div>
-                                    <div class="font-medium ${item.done ? 'text-slate-400 line-through' : 'text-white'} text-sm">${item.nombre}</div>
-                                    <div class="text-xs text-slate-400 mt-1 flex gap-3">
-                                        <span><i class="fa-solid fa-fire text-orange-400"></i> ${item.cal} kcal</span>
-                                        <span class="text-neon"><i class="fa-solid fa-drumstick-bite"></i> ${item.pro}g</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </label>`;
-                    });
-                    htmlA += `<button class="w-full mt-3 py-2 rounded-lg border border-dashed border-neon text-neon font-bold hover:bg-neon hover:text-black transition" onclick="addExtra('${diaKey}')">
-                        <i class="fa-solid fa-plus mr-1"></i> Agregar Extra
-                    </button>`;
-                    htmlA += `</div></div></div>`;
-                }
-            });
-            document.getElementById('alimentacion-container').innerHTML = htmlA;
-            
-            // Expandir el día actual si existe
-            const hoyIndex = new Date().getDay(); // 0 es Domingo, 1 es Lunes...
-            const diaActual = diasOrden[hoyIndex === 0 ? 6 : hoyIndex - 1]; // Ajustar índice (Lunes es 0 en nuestro array)
-            
-            // Intentar abrir el día actual
-            const divAliHoy = document.getElementById('ali_' + diaActual);
-            if(divAliHoy) toggleDay('ali_' + diaActual);
-            
-            const divEjerKey = Object.keys(state.ejercicios).find(k => k.startsWith(diaActual));
-            if(divEjerKey) {
-                const id = divEjerKey.replace(/\s+/g, '').replace(':','');
-                const divEjerHoy = document.getElementById(id);
-                if(divEjerHoy) toggleDay(id);
-            }
-
-            updateStats(diaActual);
-        }
-
-        function updateStats(diaCalculo = null) {
-            const hoyIndex = new Date().getDay();
-            const diaActual = diaCalculo || diasOrden[hoyIndex === 0 ? 6 : hoyIndex - 1];
-            
-            let tCal = 0; let tPro = 0;
-            
-            if(state.alimentacion[diaActual]) {
-                state.alimentacion[diaActual].forEach(item => {
-                    if(item.done) { tCal += item.cal; tPro += item.pro; }
-                });
-            }
-            
-            document.getElementById('total-cal').innerText = tCal;
-            document.getElementById('total-pro').innerText = tPro;
-            
-            let prog = (tPro / 140) * 100;
-            if (prog > 100) prog = 100;
-            document.getElementById('prot-progress').style.width = prog + '%';
-        }
-
-        // Iniciar
-        loadData();
-    </script>
+function render(){
+  today=dn(key());
+  $('tabs').innerHTML=[['w','🏋️ Entreno'],['m','🥗 Menú'],['s','🛒 Compras'],['p','⚖️ Peso'],['h','📅 Historial']].map(([k,l])=>`<button onclick="A.tab('${k}')" class="flex-1 shrink-0 px-3 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 ${tab===k?'border-lime-500 text-lime-400':'border-transparent text-slate-400'}">${l}</button>`).join('');
+  const sv=SV();let h='';
+  if(tab==='w'){
+    const list=D.w[sel]||[];
+    h+=`<div class="grid grid-cols-3 gap-3 mb-4">${card('Hoy (guardado)',kW(sv.w,today)+' kcal','text-lime-400')}${card('Semana',DAYS.reduce((a,d)=>a+kW(sv.w,d),0)+' kcal','text-orange-400')}${card(sel+' (borrador)',kW(D.w,sel)+' kcal','text-slate-300')}</div>`+dayBar();
+    h+=list.length?list.map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-3"><div class="flex justify-between gap-2"><div><h4 class="font-semibold">${esc(x.n)}</h4><p class="text-xs text-slate-400">${x.s} serie(s) · +${x.k} kcal/serie</p></div><div class="flex gap-1 shrink-0"><button class="ib" onclick="A.editW('${x.id}')">✏️</button><button class="ib" onclick="A.del('w','${x.id}')">🗑</button></div></div><div class="flex gap-2 flex-wrap mt-2">${x.c.map((c,i)=>`<button onclick="A.ck('${x.id}',${i})" class="cb ${c?'on':''}">✓</button>`).join('')}</div></div>`).join(''):'<p class="text-center text-slate-500 py-8">Día libre. Añade un ejercicio 👇</p>';
+    h+=`<button onclick="A.addW()" class="w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir ejercicio a ${sel}</button>`;
+  }
+  if(tab==='m'){
+    const list=D.m[sel]||[],pr=pM(sv.m,today),pct=Math.min(100,pr/GOAL*100);
+    h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between mb-2"><b>🥩 Proteína hoy (guardado)</b><span><b class="text-lime-400 text-lg">${pr}</b> / ${GOAL} g</span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${pr>=GOAL?'¡Meta alcanzada! 💪':'Faltan '+(GOAL-pr)+' g'} · ${kM(sv.m,today)} kcal consumidas</p></div>`+dayBar();
+    h+=`<p class="text-xs text-slate-400 mb-2">${sel}: ${pM(D.m,sel)} g proteína · ${kM(D.m,sel)} kcal (borrador)</p>`;
+    h+=list.map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-3 flex items-center gap-3"><button onclick="A.ckM('${x.id}')" class="cb ${x.c?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="text-[11px] uppercase text-slate-500">${esc(x.t)}</p><p class="font-semibold truncate">${esc(x.d)}</p><p class="text-xs"><span class="text-lime-400">${x.p} g prot</span> · <span class="text-slate-400">${x.k} kcal</span></p></div><button class="ib" onclick="A.editM('${x.id}')">✏️</button><button class="ib" onclick="A.del('m','${x.id}')">🗑</button></div>`).join('')||'<p class="text-center text-slate-500 py-8">Sin comidas.</p>';
+    h+=`<button onclick="A.addM()" class="w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir alimento a ${sel}</button>`;
+  }
+  if(tab==='s'){
+    const tot=r=>D.sh.filter(r).reduce((a,x)=>a+x.q*x.u,0),T=tot(()=>1),B=tot(x=>x.b);
+    h+=`<div class="grid grid-cols-3 gap-3 mb-4">${card('Estimado',money(T),'text-white')}${card('Comprado',money(B),'text-lime-400')}${card('Pendiente',money(T-B),'text-orange-400')}</div>`;
+    const cats=[...new Set([...CATS,...D.sh.map(x=>x.cat)])].filter(c=>D.sh.some(x=>x.cat===c));
+    const fr=D.sh.filter(x=>x.o&&x.o!=='Comprado').length;h+=fr?`<p class="text-xs text-lime-400 mb-3">🌱 ${fr} producto(s) gratis (canchón, regalo o donado): no suman al gasto.</p>`:'';
+    h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><b class="text-sm">Gasto por categoría</b>${cats.map(c=>{const v=tot(x=>x.cat===c);return `<div class="mt-2"><div class="flex justify-between text-xs"><span>${esc(c)}</span><span>${money(v)}</span></div><div class="h-2 bg-slate-900 rounded-full"><div class="h-2 bg-orange-400 rounded-full" style="width:${T?v/T*100:0}%"></div></div></div>`}).join('')||'<p class="text-xs text-slate-500 mt-1">Sin datos</p>'}</div>`;
+    h+=cats.map(c=>`<h3 class="text-xs uppercase text-slate-400 font-bold mt-4 mb-2">${esc(c)}</h3>`+D.sh.filter(x=>x.cat===c).map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-2 flex items-center gap-3"><button onclick="A.ckS('${x.id}')" class="cb ${x.b?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="font-semibold truncate ${x.b?'line-through text-slate-500':''}">${esc(x.n)}</p><p class="text-xs text-slate-400">${x.q} ${esc(x.un)} ${x.o&&x.o!=='Comprado'?`· <b class="text-lime-400">🌱 ${esc(x.o)} · gratis</b>`:`× ${money(x.u)} = <b class="text-white">${money(x.q*x.u)}</b>`}</p></div><button class="ib" onclick="A.editS('${x.id}')">✏️</button><button class="ib" onclick="A.del('s','${x.id}')">🗑</button></div>`).join('')).join('');
+    h+=`<button onclick="A.addS()" class="mt-4 w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir producto</button>`;
+  }
+  if(tab==='p')h=wHTML();
+  if(tab==='h')h=hHTML();
+  $('app').innerHTML=h;
+  const d=dirty();$('dirty').classList.toggle('hidden',!d);$('saveBtn').className='font-bold text-sm px-4 py-2 rounded-lg '+(d?'bg-lime-500 text-slate-900 animate-pulse':'bg-slate-700 text-slate-400');
+}
+const wk=()=>Object.keys(D.pw).sort();
+function wHTML(){const ks=wk(),k=key(),cur=ks.length?D.pw[ks[ks.length-1]]:0,g=D.g,st=g.start||(ks.length?D.pw[ks[0]]:0),id=g.ideal;
+ let pct=0,msg='Define tu peso ideal para ver tu progreso.';
+ if(id&&st&&cur&&st!==id){pct=Math.max(0,Math.min(100,(st-cur)/(st-id)*100));const rem=cur-id;msg=Math.abs(rem)<0.05?'¡Llegaste a tu peso ideal! 🎯':(rem>0?'Te faltan '+rem.toFixed(1)+' kg por bajar':'Te faltan '+(-rem).toFixed(1)+' kg por subir')}
+ let h=D.pw[k]?'':'<div class="bg-amber-900/40 border border-amber-500 text-amber-200 text-sm rounded-xl p-3 mb-4">⏰ Aún no registras tu peso de hoy (pésate a las 6:00 am).</div>';
+ h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><b class="text-sm">Registrar peso</b><div class="grid grid-cols-5 gap-2 mt-2"><input type="date" id="wd" value="${k}" max="${k}" class="col-span-2"><input type="number" id="wv" step="0.1" min="20" max="300" inputmode="decimal" placeholder="kg" class="col-span-2"><button onclick="A.addP()" class="bg-lime-500 text-slate-900 font-bold rounded-lg">OK</button></div><p id="we" class="text-red-400 text-xs mt-1 min-h-4"></p></div>`;
+ h+=`<div class="grid grid-cols-3 gap-3 mb-3">${card('Actual',cur?cur+' kg':'—','text-white')}${card('Ideal',id?id+' kg':'—','text-lime-400')}${card('Inicial',st?st+' kg':'—','text-slate-300')}</div>`;
+ h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between text-sm mb-2"><b>🎯 Progreso hacia tu meta</b><span class="text-lime-400 font-bold">${pct.toFixed(0)}%</span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${msg}</p><button onclick="A.goal()" class="ib mt-3">✏️ Editar meta</button></div>`;
+ const pts=ks.slice(-30).map(x=>[x,D.pw[x]]);
+ if(pts.length>1){const v=pts.map(p=>p[1]).concat(id?[id]:[]),mn=Math.min(...v)-0.5,mx=Math.max(...v)+0.5,X=i=>10+i*(280/(pts.length-1)),Y=y=>110-(y-mn)/(mx-mn)*100;
+  h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-4"><svg viewBox="0 0 300 120" class="w-full">${id?`<line x1="10" x2="290" y1="${Y(id)}" y2="${Y(id)}" stroke="#84cc16" stroke-dasharray="4"/>`:''}<polyline fill="none" stroke="#fb923c" stroke-width="2" points="${pts.map((p,i)=>X(i)+','+Y(p[1])).join(' ')}"/>${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p[1])}" r="2.5" fill="#fb923c"/>`).join('')}</svg><p class="text-[11px] text-slate-500 text-center">Últimos ${pts.length} registros · línea verde = peso ideal</p></div>`}
+ h+=`<table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Cambio</th><th></th></tr></thead><tbody>${ks.slice().reverse().map(x=>{const i=ks.indexOf(x),d=i?D.pw[x]-D.pw[ks[i-1]]:0;return `<tr class="border-t border-slate-800"><td class="p-2">${dn(x).slice(0,3)} ${show(x)}</td><td class="p-2 text-center font-semibold">${D.pw[x]} kg</td><td class="p-2 text-center ${d>0?'text-orange-400':d<0?'text-lime-400':'text-slate-500'}">${i?(d>0?'+':'')+d.toFixed(1):'—'}</td><td><button class="ib" onclick="A.delP('${x}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros</td></tr>'}</tbody></table>`;return h}
+function hHTML(){const sv=SV(),ks=[...new Set([...Object.keys(sv.h),...Object.keys(sv.pw)])].sort().reverse();
+ const rows=ks.map(k=>{const r=sv.h[k],b=r?r.kc-r.kb:null;return `<tr class="border-t border-slate-800"><td class="p-2 whitespace-nowrap">${dn(k).slice(0,3)} ${show(k)}</td><td class="p-2 text-center">${sv.pw[k]?sv.pw[k]+' kg':'—'}</td><td class="p-2 text-center text-orange-400">${r?r.kb:'—'}</td><td class="p-2 text-center">${r?r.kc:'—'}</td><td class="p-2 text-center ${b>0?'text-orange-400':'text-lime-400'}">${r?(b>0?'+':'')+b:'—'}</td><td class="p-2 text-center text-lime-400">${r?r.p+' g':'—'}</td></tr>`}).join('');
+ return `<p class="text-xs text-slate-400 mb-3">Se guarda un resumen del día cada vez que pulsas 💾 Guardar. Fechas con calendario de Perú (America/Lima). Balance = kcal consumidas − quemadas.</p><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Quemadas</th><th class="p-2">Consumidas</th><th class="p-2">Balance</th><th class="p-2">Proteína</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="p-6 text-center text-slate-500">Aún no hay historial. Marca tus checks y pulsa Guardar.</td></tr>'}</tbody></table></div>`}
+function setSt(t){$('st').textContent=t}
+function push(){if(docRef)setDoc(docRef,{json:saved,updated:Date.now()}).then(()=>setSt('☁️ Sincronizado')).catch(e=>setSt('⚠️ Error nube'))}
+async function initFB(){if(!CFG){setSt('💾 Local');return}
+ try{const app=initializeApp(CFG),auth=getAuth(app),db=getFirestore(app);
+  if(typeof __initial_auth_token!=='undefined')await signInWithCustomToken(auth,__initial_auth_token);else await signInAnonymously(auth);
+  onAuthStateChanged(auth,u=>{if(!u)return;docRef=doc(db,'artifacts',APPID,'users',u.uid,'appState','mainData');
+   onSnapshot(docRef,sn=>{if(sn.exists()){const j=sn.data().json;if(j&&j!==saved&&!dirty()){try{D=norm(JSON.parse(j));saved=JSON.stringify(D);render()}catch(e){}}setSt('☁️ Sincronizado')}else push()},()=>setSt('⚠️ Sin conexión'))})
+ }catch(e){setSt('⚠️ Firebase: '+String(e.message).slice(0,30))}}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hidden');setTimeout(()=>e.classList.add('hidden'),2200)}
+function form(title,fields,vals,ok){cfg={fields,ok};$('mt').textContent=title;$('me').textContent='';
+  $('mb').innerHTML=fields.map(f=>`<label class="block text-xs text-slate-400">${f.l}${f.t==='select'?`<select name="${f.k}">${f.o.map(o=>`<option ${o===vals[f.k]?'selected':''}>${esc(o)}</option>`).join('')}</select>`:`<input name="${f.k}" type="${f.t}" ${f.t==='number'?'step="any" min="0" inputmode="decimal"':''} value="${esc(vals[f.k]??'')}">`}</label>`).join('');
+  $('modal').classList.remove('hidden')}
+const find=(arr,id)=>arr.find(x=>x.id===id);
+const A={
+ tab(t){tab=t;render()},day(d){sel=d;render()},close(){$('modal').classList.add('hidden')},
+ submit(e){e.preventDefault();const v={};for(const f of cfg.fields){let x=new FormData($('mf')).get(f.k);x=(x||'').trim();
+   if(f.t==='number'){x=x===''?0:parseFloat(x);if(isNaN(x)||x<0){$('me').textContent=f.l+': número válido (≥ 0)';return false}}
+   else if(f.req&&!x){$('me').textContent='Falta: '+f.l;return false}v[f.k]=x}
+   if(v.s!==undefined&&(v.s<1||v.s>12||v.s%1)){$('me').textContent='Series: entero entre 1 y 12';return false}
+   cfg.ok(v);A.close();render();return false},
+ ck(id,i){const x=find(D.w[sel],id);x.c[i]=!x.c[i];render()},
+ ckM(id){const x=find(D.m[sel],id);x.c=!x.c;render()},
+ ckS(id){const x=find(D.sh,id);x.b=!x.b;render()},
+ addW(){form('Nuevo ejercicio · '+sel,[{k:'n',l:'Nombre',t:'text',req:1},{k:'s',l:'Series',t:'number'},{k:'k',l:'kcal por serie',t:'number'}],{s:3,k:15},v=>D.w[sel].push(W(v.n,v.s||1,v.k)))},
+ editW(id){const x=find(D.w[sel],id);form('Editar ejercicio',[{k:'n',l:'Nombre',t:'text',req:1},{k:'s',l:'Series',t:'number'},{k:'k',l:'kcal por serie',t:'number'}],x,v=>{x.n=v.n;x.k=v.k;const s=v.s||1;x.c=Array.from({length:s},(_,i)=>x.c[i]||false);x.s=s})},
+ addM(){form('Nuevo alimento · '+sel,[{k:'t',l:'Comida',t:'select',o:['Desayuno','Almuerzo','Cena','Snack','Extra']},{k:'d',l:'Descripción',t:'text',req:1},{k:'p',l:'Proteína (g)',t:'number'},{k:'k',l:'Calorías (kcal)',t:'number'}],{t:'Snack'},v=>D.m[sel].push(M(v.t,v.d,v.p,v.k)))},
+ editM(id){const x=find(D.m[sel],id);form('Editar alimento',[{k:'t',l:'Comida',t:'select',o:['Desayuno','Almuerzo','Cena','Snack','Extra']},{k:'d',l:'Descripción',t:'text',req:1},{k:'p',l:'Proteína (g)',t:'number'},{k:'k',l:'Calorías (kcal)',t:'number'}],x,v=>Object.assign(x,v))},
+ addS(){form('Nuevo producto',[{k:'n',l:'Producto',t:'text',req:1},{k:'cat',l:'Categoría',t:'select',o:CATS},{k:'o',l:'Origen (si no es comprado, no lleva precio)',t:'select',o:ORIG},{k:'q',l:'Cantidad',t:'number'},{k:'un',l:'Unidad (kg, und...)',t:'text'},{k:'u',l:'Precio por unidad (S/)',t:'number'}],{q:1,un:'und',o:'Comprado'},v=>{if(v.o!=='Comprado')v.u=0;D.sh.push({id:uid(),b:false,...v})})},
+ editS(id){const x=find(D.sh,id);form('Editar producto',[{k:'n',l:'Producto',t:'text',req:1},{k:'cat',l:'Categoría',t:'select',o:[...new Set([...CATS,x.cat])]},{k:'o',l:'Origen (si no es comprado, no lleva precio)',t:'select',o:ORIG},{k:'q',l:'Cantidad',t:'number'},{k:'un',l:'Unidad',t:'text'},{k:'u',l:'Precio por unidad (S/)',t:'number'}],x,v=>{if(v.o!=='Comprado')v.u=0;Object.assign(x,v)})},
+ del(t,id){if(!confirm('¿Eliminar este elemento?'))return;if(t==='s')D.sh=D.sh.filter(x=>x.id!==id);else D[t][sel]=D[t][sel].filter(x=>x.id!==id);render()},
+ save(){const k=key(),d=dn(k);D.h[k]={kb:kW(D.w,d),kc:kM(D.m,d),p:pM(D.m,d)};const s=JSON.stringify(D);try{localStorage.setItem(KEY,s)}catch(e){toast('⚠️ No se pudo guardar localmente. Usa Exportar.')}saved=s;push();render();toast('✅ Guardado')},
+ addP(){const d=$('wd').value,v=parseFloat($('wv').value);if(!d||d>key()){$('we').textContent='Fecha inválida (no futura)';return}if(isNaN(v)||v<20||v>300){$('we').textContent='Peso válido: 20–300 kg';return}D.pw[d]=Math.round(v*10)/10;A.save()},
+ delP(k){if(confirm('¿Eliminar el peso del '+show(k)+'?')){delete D.pw[k];A.save()}},
+ goal(){form('Meta de peso',[{k:'ideal',l:'Peso ideal (kg)',t:'number'},{k:'start',l:'Peso inicial (kg, 0 = primer registro)',t:'number'}],D.g,v=>{D.g={ideal:v.ideal,start:v.start};A.save()})},
+ menu(){const o=prompt('1 = Reiniciar checks de la semana\n2 = Exportar copia (JSON)\n3 = Importar copia\n4 = Restaurar datos originales');
+  if(o==='1'){if(confirm('¿Desmarcar todos los checks de la semana?')){DAYS.forEach(d=>{D.w[d].forEach(x=>x.c=x.c.map(()=>false));D.m[d].forEach(x=>x.c=false)});D.sh.forEach(x=>x.b=false);render()}}
+  if(o==='2'){const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(D));a.download='walifit-backup.json';a.click()}
+  if(o==='3')$('imp').click();
+  if(o==='4'&&confirm('Se perderán tus cambios. ¿Continuar?')){D=def();render()}}
+};
+$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.w||!j.m||!j.sh)throw 0;D=j;render();toast('Importado: pulsa Guardar')}catch(x){alert('Archivo no válido')}};r.readAsText(f);e.target.value=''};
+window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue=''}});
+window.A=A;
+render();
+initFB();
+</script>
 </body>
 </html>
