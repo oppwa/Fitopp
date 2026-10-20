@@ -119,7 +119,7 @@ function def(){return{
   S('Lentejas','Abarrotes',1,'kg',0),S('Arroz','Abarrotes',1,'kg',0),S('Avena','Abarrotes',1,'bolsa',0),S('Fideos','Abarrotes',2,'paq',0)]}}
 let fsel=null,fedit=null,saved,D,tab='r',cfg=null,docRef,today=key(),sel=today;
 const MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let cm=null,cd=null,ext=null,pex=null,anon=false,who='',auth,db,unsub=null;
+let cm=null,cd=null,ext=null,pex=null,anon=false,who='',auth,db,unsub=null,pend=null;
 const win=()=>{const l=[0,1,2,3,4,5,6,7].map(i=>ad(today,i));if(ext&&!l.includes(ext)){ext<today?l.unshift(ext):l.push(ext)}return l};
 function norm(j){j.fd=j.fd||FOODS();j.h=j.h||{};j.pw=j.pw||{};j.g=j.g||{ideal:0,start:0};const m=mon(key());
  if(!j.dw||!j.dm){j.dw={};j.dm={};const t=key();if(j.wk===m){const n=dn(t);j.dw[t]=cl(j.w[n],1);j.dm[t]=cl(j.m[n],1)}}
@@ -218,13 +218,23 @@ function hHTML(){const sv=SV(),ks=[...new Set([...Object.keys(sv.h),...Object.ke
  return calHTML()+`<h3 class="font-bold text-sm mb-2">Resumen por fecha</h3><p class="text-xs text-slate-400 mb-3">Se guarda un resumen del día cada vez que pulsas 💾 Guardar. Fechas con calendario de Perú (America/Lima). Balance = kcal consumidas − quemadas.</p><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Quemadas</th><th class="p-2">Consumidas</th><th class="p-2">Balance</th><th class="p-2">Proteína</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="p-6 text-center text-slate-500">Aún no hay historial. Marca tus checks y pulsa Guardar.</td></tr>'}</tbody></table></div>`}
 function setSt(t){$('st').textContent=t+(who?' · '+who:'')}
 function push(){if(docRef)setDoc(docRef,{json:saved,updated:Date.now()}).then(()=>setSt('☁️ Sincronizado')).catch(e=>setSt('⚠️ Error nube'))}
+const sc=j=>{const o=JSON.parse(j);return Object.keys(o.h||{}).length+Object.keys(o.pw||{}).length+Math.abs((o.fd||[]).length-25)+Math.max(0,Object.keys(o.dw||{}).length-2)};
+const useCloud=j=>{try{localStorage.setItem(KEY+'_bak',saved)}catch(e){}D=norm(JSON.parse(j));saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}render()};
 function acct(u){anon=!!u.isAnonymous;who=anon?'':(u.email||'');const b=$('acct');b.textContent=anon?'🔐 Google':'👤';b.title=who||'Cuenta anónima'}
 async function initFB(){if(!CFG){setSt('💾 Local');$('acct').classList.add('hidden');return}
  try{const app=initializeApp(CFG);auth=getAuth(app);const db=getFirestore(app);
   onAuthStateChanged(auth,async u=>{
    if(!u){try{if(typeof __initial_auth_token!=='undefined')await signInWithCustomToken(auth,__initial_auth_token);else await signInAnonymously(auth)}catch(e){setSt('⚠️ '+String(e.code||e.message).slice(0,28))}return}
    acct(u);docRef=doc(db,'artifacts',APPID,'users',u.uid,'appState','mainData');if(unsub)unsub();
-   unsub=onSnapshot(docRef,sn=>{if(sn.exists()){const j=sn.data().json;if(j&&j!==saved&&!dirty()){try{D=norm(JSON.parse(j));saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}render()}catch(e){}}setSt('☁️ Sincronizado')}else push()},()=>setSt('⚠️ Sin conexión'));render()})
+   unsub=onSnapshot(docRef,sn=>{if(!sn.exists()){pend=null;push();return}
+    const j=sn.data().json;
+    if(pend!==null){const loc=pend;pend=null;
+     if(j&&j!==loc){let a=0,b=0;try{a=sc(loc);b=sc(j)}catch(e){}
+      const keep=a>0&&b===0?true:(a===0?false:confirm('Hay datos distintos:\n• Este dispositivo: '+a+' registro(s)\n• Tu cuenta de Google: '+b+' registro(s)\n\nAceptar = conservar los de ESTE dispositivo (reemplaza los de la cuenta)\nCancelar = conservar los de tu CUENTA (los de este dispositivo quedan como respaldo)'));
+      if(keep){D=norm(JSON.parse(loc));saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}push();render();toast('✅ Se conservaron los datos de este dispositivo')}else{useCloud(j);toast('✅ Se cargaron los datos de tu cuenta')}}
+     setSt('☁️ Sincronizado');return}
+    if(j&&j!==saved&&!dirty()){try{useCloud(j)}catch(e){}}
+    setSt('☁️ Sincronizado')},()=>setSt('⚠️ Sin conexión'));render()})
  }catch(e){setSt('⚠️ Firebase: '+String(e.message).slice(0,30))}}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hidden');setTimeout(()=>e.classList.add('hidden'),2200)}
 function form(title,fields,vals,ok){cfg={fields,ok};$('mt').textContent=title;$('me').textContent='';
@@ -235,10 +245,10 @@ const A={
  tab(t){tab=t;render()},day(d){if(d!==ext)ext=null;sel=d;render()},
  async google(){if(!auth){toast('Firebase no está configurado');return}const p=new GoogleAuthProvider();
   try{if(auth.currentUser&&auth.currentUser.isAnonymous){await linkWithPopup(auth.currentUser,p);acct(auth.currentUser);push();render();toast('✅ Cuenta de Google vinculada')}else await signInWithPopup(auth,p)}
-  catch(e){if(e.code==='auth/credential-already-in-use'||e.code==='auth/email-already-in-use'){const c=GoogleAuthProvider.credentialFromError(e);if(c&&confirm('Esta cuenta de Google ya tiene datos guardados. Se cargarán en este dispositivo y los datos locales de aquí quedarán como respaldo. ¿Continuar?')){try{localStorage.setItem(KEY+'_bak',saved)}catch(_){}try{await signInWithCredential(auth,c);toast('✅ Sesión iniciada')}catch(e2){toast('⚠️ '+(e2.code||e2.message))}}}
+  catch(e){if(e.code==='auth/credential-already-in-use'||e.code==='auth/email-already-in-use'){const c=GoogleAuthProvider.credentialFromError(e);if(c&&confirm('Esta cuenta de Google ya se usa en otro dispositivo. Compararé los datos de aquí con los de la cuenta y tú eliges cuáles conservar. ¿Continuar?')){try{localStorage.setItem(KEY+'_bak',JSON.stringify(D))}catch(_){}pend=JSON.stringify(D);try{await signInWithCredential(auth,c)}catch(e2){pend=null;toast('⚠️ '+(e2.code||e2.message))}}}
    else if(e.code==='auth/popup-blocked')toast('⚠️ Permite las ventanas emergentes e inténtalo de nuevo');else if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request')toast('⚠️ '+(e.code||e.message))}},
  acct(){if(!auth)return;if(anon)A.google();else if(confirm('Sesión: '+who+'\n¿Cerrar sesión? Los datos de este dispositivo se borrarán de aquí; seguirán en tu cuenta.'))A.out()},
- async out(){try{await signOut(auth)}catch(e){}D=norm(def());saved=JSON.stringify(D);try{localStorage.removeItem(KEY)}catch(e){}who='';sel=today;render()},
+ async out(){try{localStorage.setItem(KEY+'_bak',JSON.stringify(D))}catch(e){}try{await signOut(auth)}catch(e){}D=norm(def());saved=JSON.stringify(D);try{localStorage.removeItem(KEY)}catch(e){}who='';sel=today;render()},
  cmv(n){const[y,m]=cm.split('-').map(Number),t=new Date(y,m-1+n,1);cm=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');render()},
  cday(d){cd=d;render()},goDay(d){ext=win().includes(d)?null:d;sel=d;tab='w';render()},
  xv(id){pex=id;const x=find(PW(sel),id);$('pmt').textContent=x.n;$('pmq').value='';$('pmu').value='';$('pme').textContent='';$('pmi').innerHTML=xi(x);A.xs();$('pm').classList.remove('hidden')},
@@ -290,13 +300,14 @@ const A={
  addP(){const d=$('wd').value,v=parseFloat($('wv').value);if(!d||d>key()){$('we').textContent='Fecha inválida (no futura)';return}if(isNaN(v)||v<20||v>300){$('we').textContent='Peso válido: 20–300 kg';return}D.pw[d]=Math.round(v*10)/10;A.save()},
  delP(k){if(confirm('¿Eliminar el peso del '+show(k)+'?')){delete D.pw[k];A.save()}},
  goal(){form('Meta de peso',[{k:'ideal',l:'Peso ideal (kg)',t:'number'},{k:'start',l:'Peso inicial (kg, 0 = primer registro)',t:'number'}],D.g,v=>{D.g={ideal:v.ideal,start:v.start};A.save()})},
- menu(){const o=prompt('1 = Reiniciar checks de la semana\n2 = Exportar copia (JSON)\n3 = Importar copia\n4 = Restaurar datos originales');
+ menu(){const o=prompt('1 = Reiniciar checks de la semana\n2 = Exportar copia (JSON)\n3 = Importar copia\n4 = Restaurar datos originales\n5 = Restaurar respaldo local (antes de cambiar de cuenta o cerrar sesión)');
   if(o==='1'){if(confirm('¿Desmarcar todos los checks (ejercicios, comidas y compras)?')){Object.keys(D.dw).forEach(d=>D.dw[d].forEach(x=>x.c=x.c.map(()=>false)));Object.keys(D.dm).forEach(d=>D.dm[d].forEach(x=>x.c=false));D.sh.forEach(x=>x.b=false);render()}}
   if(o==='2'){const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(D));a.download='walifit-backup.json';a.click()}
   if(o==='3')$('imp').click();
-  if(o==='4'&&confirm('Se perderán tus cambios. ¿Continuar?')){D=def();render()}}
+  if(o==='4'&&confirm('Se perderán tus cambios. ¿Continuar?')){D=norm(def());render()}
+  if(o==='5'){let b=null;try{b=localStorage.getItem(KEY+'_bak')}catch(e){}if(!b)alert('No hay respaldo local en este dispositivo.');else if(confirm('Se cargará el respaldo ('+sc(b)+' registro(s)) y reemplazará lo actual. Después pulsa Guardar para subirlo a tu cuenta. ¿Continuar?')){try{D=norm(JSON.parse(b));render();toast('Respaldo cargado: pulsa 💾 Guardar')}catch(e){alert('El respaldo está dañado')}}}}
 };
-$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.w||!j.m||!j.sh)throw 0;D=j;render();toast('Importado: pulsa Guardar')}catch(x){alert('Archivo no válido')}};r.readAsText(f);e.target.value=''};
+$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.w||!j.m||!j.sh)throw 0;D=norm(j);render();toast('Importado: pulsa Guardar')}catch(x){alert('Archivo no válido')}};r.readAsText(f);e.target.value=''};
 window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue=''}});
 window.A=A;
 render();
