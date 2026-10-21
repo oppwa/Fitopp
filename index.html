@@ -10,43 +10,48 @@
 :root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{font-family:Inter,system-ui,sans-serif;background:#0f172a;color:#f8fafc;-webkit-tap-highlight-color:transparent}
-.cb{width:26px;height:26px;border:2px solid #475569;border-radius:7px;background:#1e293b;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:transparent;transition:.15s}
+.cb{width:30px;height:30px;border:2px solid #475569;border-radius:8px;background:#1e293b;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:transparent;transition:.15s;flex-shrink:0}
 .cb.on{background:#84cc16;border-color:#84cc16;color:#0f172a;font-weight:700}
-.ib{padding:4px 8px;border-radius:8px;font-size:13px;background:#1e293b;border:1px solid #334155}
+.ib{padding:6px 10px;border-radius:8px;font-size:14px;background:#1e293b;border:1px solid #334155;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
 .ib:hover{border-color:#84cc16}
-input,select{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px;width:100%;color:#fff;outline:none}
+input,select{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;width:100%;color:#fff;outline:none;font-size:16px}
+@media(min-width:640px){input,select{font-size:14px;padding:8px}}
 input:focus,select:focus{border-color:#84cc16}
 .xa{position:relative;width:80px;height:80px;border-radius:12px;overflow:hidden;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .xa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
 .xa img+img{animation:fl 1.4s steps(1) infinite}
 @keyframes fl{0%{opacity:1}50%{opacity:0}}
 .ni{font-style:normal}
+.tab-btn{flex:1 0 auto;min-width:52px;padding:10px 8px;font-size:13px;font-weight:600;white-space:nowrap;border-bottom:2px solid transparent;color:#94a3b8;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab-btn.active{border-color:#84cc16;color:#a3e635}
+@media(min-width:640px){.tab-btn{flex:1;min-width:0;font-size:14px;flex-direction:row;gap:4px}}
 </style>
 </head>
 <body class="min-h-screen pb-24">
 <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800">
-  <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-    <div class="min-w-0"><h1 class="text-xl font-bold leading-tight">⚡ Wali<span class="text-lime-500">Fit</span></h1><p id="st" class="text-[10px] text-slate-400 leading-none truncate max-w-[36vw]"></p></div>
-    <div class="flex items-center gap-2">
-      <span id="dirty" class="hidden text-xs text-amber-400">● Sin guardar</span>
-      <button onclick="A.acct()" id="acct" class="ib whitespace-nowrap">🔐 Google</button><button onclick="A.save()" id="saveBtn" class="bg-lime-500 text-slate-900 font-bold text-sm px-4 py-2 rounded-lg">💾 Guardar</button>
+  <div class="max-w-3xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+    <div class="min-w-0"><h1 class="text-lg sm:text-xl font-bold leading-tight">⚡ Wali<span class="text-lime-500">Fit</span></h1><p id="st" class="text-[10px] text-slate-400 leading-none truncate max-w-[40vw]"></p></div>
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <span id="dirty" class="hidden text-[10px] sm:text-xs text-amber-400">● Sin guardar</span>
+      <button onclick="A.acct()" id="acct" class="ib whitespace-nowrap">🔐<span class="hidden sm:inline"> Google</span></button>
+      <button onclick="A.save()" id="saveBtn" class="bg-lime-500 text-slate-900 font-bold text-sm px-3 sm:px-4 py-2 rounded-lg">💾<span class="hidden sm:inline"> Guardar</span></button>
       <button onclick="A.menu()" class="ib">⋯</button>
     </div>
   </div>
-  <nav class="max-w-3xl mx-auto px-4 flex overflow-x-auto" id="tabs"></nav>
+  <nav class="max-w-3xl mx-auto px-1 sm:px-4 flex overflow-x-auto" id="tabs"></nav>
 </header>
-<main class="max-w-3xl mx-auto px-4 py-5" id="app"></main>
+<main class="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-5" id="app"></main>
 
-<div id="pm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+<div id="pm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
  <div class="flex justify-between mb-2"><h3 id="pmt" class="font-bold"></h3><button class="ib" onclick="A.xclose()">✕</button></div>
- <div id="pmi" class="xa mx-auto" style="width:220px;height:220px"></div>
+ <div id="pmi" class="xa mx-auto" style="width:min(220px,80vw);height:min(220px,80vw)"></div>
  <p class="text-[11px] text-slate-500 text-center mt-1">La imagen alterna entre el inicio y el final del movimiento.</p>
  <label class="block text-xs text-slate-400 mt-3">Cambiar imagen · buscar en el catálogo<input id="pmq" oninput="A.xs()" placeholder="sentadilla, press banca, curl..." autocomplete="off"></label>
  <div id="pmr" class="mt-2 max-h-48 overflow-y-auto space-y-1"></div>
  <label class="block text-xs text-slate-400 mt-3">O pega la URL de tu propio GIF o imagen<input id="pmu" placeholder="https://..."></label>
  <div class="flex gap-2 mt-2"><button type="button" onclick="A.xurl()" class="flex-1 py-2 rounded-lg border border-slate-600 text-sm">Usar URL</button><button type="button" onclick="A.xdel()" class="flex-1 py-2 rounded-lg border border-slate-600 text-sm">Quitar imagen</button></div>
  <p id="pme" class="text-red-400 text-xs mt-1 min-h-4"></p></div></div>
-<div id="fm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+<div id="fm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
  <h3 class="font-bold mb-1" id="fmt">Añadir alimento</h3><p id="fh" class="hidden text-xs text-slate-400 mb-2">Elige otro alimento de la lista para reemplazar este, o solo cambia el momento.</p>
  <label class="block text-xs text-slate-400">Momento<select id="fs"></select></label>
  <label class="block text-xs text-slate-400 mt-3">Buscar en tu base de alimentos<input id="fq" placeholder="huevo, avena, café..." oninput="A.fsearch()" autocomplete="off"></label>
@@ -55,12 +60,12 @@ input:focus,select:focus{border-color:#84cc16}
  <p id="fe" class="text-red-400 text-xs mt-2 min-h-4"></p>
  <button type="button" onclick="A.fman()" class="text-xs text-slate-400 underline mb-3">✍️ Ingresar manualmente</button>
  <div class="flex gap-3"><button type="button" onclick="A.fclose()" class="flex-1 py-2 rounded-lg border border-slate-600">Cancelar</button><button type="button" onclick="A.fok()" id="fb" class="flex-1 py-2 rounded-lg bg-lime-500 text-slate-900 font-bold">Añadir</button></div></div></div>
-<div id="bm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+<div id="bm" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4"><div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
  <div class="flex justify-between mb-3"><h3 class="font-bold">📚 Base de alimentos</h3><button class="ib" onclick="A.bclose()">✕</button></div>
  <input id="bq" placeholder="Buscar..." oninput="A.bl()" class="mb-3"><div id="bl" class="space-y-2"></div>
  <button onclick="A.newF('')" class="mt-3 w-full py-2 rounded-lg bg-lime-500 text-slate-900 font-bold">＋ Nuevo alimento o plato</button></div></div>
 <div id="modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 flex items-end sm:items-center justify-center p-4">
-  <form id="mf" class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm" onsubmit="return A.submit(event)">
+  <form id="mf" class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto" onsubmit="return A.submit(event)">
     <h3 id="mt" class="font-bold mb-3"></h3><div id="mb" class="space-y-3"></div>
     <p id="me" class="text-red-400 text-xs mt-2 min-h-4"></p>
     <div class="flex gap-3 mt-3"><button type="button" onclick="A.close()" class="flex-1 py-2 rounded-lg border border-slate-600">Cancelar</button><button class="flex-1 py-2 rounded-lg bg-lime-500 text-slate-900 font-bold">Aceptar</button></div>
@@ -71,9 +76,8 @@ input:focus,select:focus{border-color:#84cc16}
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import{getAuth,signInAnonymously,signInWithCustomToken,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,linkWithPopup,signInWithCredential,signOut}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getAuth,signInAnonymously,signInWithCustomToken,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,linkWithPopup,linkWithRedirect,signInWithCredential,signOut,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import{getFirestore,doc,setDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-// Pega aquí tu configuración de Firebase (Consola > Configuración del proyecto > Tus apps). Si la página ya inyecta __firebase_config, se usa esa.
 const FIREBASE_CONFIG={apiKey:"AIzaSyASSRUX3E-bQC4gxpARWchn07HFxTvaDoA",authDomain:"walifit.firebaseapp.com",projectId:"walifit",storageBucket:"walifit.firebasestorage.app",messagingSenderId:"1054547852328",appId:"1:1054547852328:web:33791121eb621ec368c91d"};
 const CFG=typeof __firebase_config!=='undefined'?JSON.parse(__firebase_config):(FIREBASE_CONFIG.apiKey?FIREBASE_CONFIG:null);
 const APPID=typeof __app_id!=='undefined'?__app_id:'wali-fit-app';
@@ -119,7 +123,7 @@ function def(){return{
   S('Lentejas','Abarrotes',1,'kg',0),S('Arroz','Abarrotes',1,'kg',0),S('Avena','Abarrotes',1,'bolsa',0),S('Fideos','Abarrotes',2,'paq',0)]}}
 let fsel=null,fedit=null,saved,D,tab='r',cfg=null,docRef,today=key(),sel=today;
 const MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let cm=null,cd=null,ext=null,pex=null,anon=false,who='',auth,db,unsub=null,pend=null;
+let cm=null,cd=null,ext=null,pex=null,anon=false,who='',auth,db,unsub=null,pend=null,redirectHandled=false;
 const win=()=>{const l=[0,1,2,3,4,5,6,7].map(i=>ad(today,i));if(ext&&!l.includes(ext)){ext<today?l.unshift(ext):l.push(ext)}return l};
 function norm(j){j.fd=j.fd||FOODS();j.h=j.h||{};j.pw=j.pw||{};j.g=j.g||{ideal:0,start:0};const m=mon(key());
  if(!j.dw||!j.dm){j.dw={};j.dm={};const t=key();if(j.wk===m){const n=dn(t);j.dw[t]=cl(j.w[n],1);j.dm[t]=cl(j.m[n],1)}}
@@ -140,40 +144,40 @@ const kM=(s,d)=>(s.dm[d]||[]).filter(x=>x.c).reduce((a,x)=>a+x.k,0);
 const pM=(s,d)=>(s.dm[d]||[]).filter(x=>x.c).reduce((a,x)=>a+x.p,0);
 const $=id=>document.getElementById(id);
 
-function dayBar(){return `<div class="flex gap-2 overflow-x-auto pb-3 mb-3">${win().map(d=>`<button onclick="A.day('${d}')" class="shrink-0 w-14 py-1.5 rounded-xl text-center border ${d===sel?'bg-lime-500 text-slate-900 border-lime-500':'border-slate-700 text-slate-300'}"><span class="block text-[10px] uppercase">${dn(d).slice(0,3)}</span><b class="text-base">${+d.slice(8)}</b>${d===today?'<span class="block text-[9px] font-bold leading-none">HOY</span>':''}</button>`).join('')}</div>`}
-function card(t,v,c){return `<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center"><p class="text-[11px] uppercase text-slate-400">${t}</p><p class="text-xl font-bold ${c}">${v}</p></div>`}
+function dayBar(){return `<div class="flex gap-1.5 sm:gap-2 overflow-x-auto pb-3 mb-3">${win().map(d=>`<button onclick="A.day('${d}')" class="shrink-0 w-12 sm:w-14 py-1.5 rounded-xl text-center border ${d===sel?'bg-lime-500 text-slate-900 border-lime-500':'border-slate-700 text-slate-300'}"><span class="block text-[10px] uppercase">${dn(d).slice(0,3)}</span><b class="text-base">${+d.slice(8)}</b>${d===today?'<span class="block text-[9px] font-bold leading-none">HOY</span>':''}</button>`).join('')}</div>`}
+function card(t,v,c){return `<div class="bg-slate-800 border border-slate-700 rounded-xl p-2.5 sm:p-3 text-center"><p class="text-[10px] sm:text-[11px] uppercase text-slate-400 leading-tight">${t}</p><p class="text-lg sm:text-xl font-bold ${c}">${v}</p></div>`}
 
 function render(){
   today=key();if(!win().includes(sel))sel=today;
-  $('tabs').innerHTML=[['r','📈 Progreso'],['w','🏋️ Entreno'],['m','🥗 Menú'],['s','🛒 Compras'],['p','⚖️ Peso'],['h','📅 Historial']].map(([k,l])=>`<button onclick="A.tab('${k}')" class="flex-1 shrink-0 px-3 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 ${tab===k?'border-lime-500 text-lime-400':'border-transparent text-slate-400'}">${l}</button>`).join('');
+  $('tabs').innerHTML=[['r','📈','Progreso'],['w','🏋️','Entreno'],['m','🥗','Menú'],['s','🛒','Compras'],['p','⚖️','Peso'],['h','📅','Historial']].map(([k,e,l])=>`<button onclick="A.tab('${k}')" class="tab-btn ${tab===k?'active':''}"><span>${e}</span><span>${l}</span></button>`).join('');
   const sv=SV();let h='';
   if(tab==='w'){
     const list=PW(sel),wkS=f=>Object.keys(sv.dw).filter(d=>mon(d)===mon(today)).reduce((a,d)=>a+f(sv,d),0);
-    h+=`<div class="grid grid-cols-3 gap-3 mb-4">${card('Hoy (guardado)',kW(sv,today)+' kcal','text-lime-400')}${card('Semana',wkS(kW)+' kcal','text-orange-400')}${card(lab(sel)+' (borrador)',kW(D,sel)+' kcal','text-slate-300')}</div>`+dayBar();
+    h+=`<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">${card('Hoy (guardado)',kW(sv,today)+' kcal','text-lime-400')}${card('Semana',wkS(kW)+' kcal','text-orange-400')}${card(lab(sel)+' (borrador)',kW(D,sel)+' kcal','text-slate-300')}</div>`+dayBar();
     h+=list.length?list.map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-3"><div class="flex gap-3"><button onclick="A.xv('${x.id}')" class="xa" title="Ver cómo se hace">${xi(x)}</button><div class="flex-grow min-w-0"><h4 class="font-semibold">${esc(x.n)}</h4><p class="text-xs text-slate-400">${x.s} serie(s) · +${x.k} kcal/serie</p></div><div class="flex gap-1 shrink-0"><button class="ib" onclick="A.editW('${x.id}')">✏️</button><button class="ib" onclick="A.del('w','${x.id}')">🗑</button></div></div><div class="flex gap-2 flex-wrap mt-2">${x.c.map((c,i)=>`<button onclick="A.ck('${x.id}',${i})" class="cb ${c?'on':''}">✓</button>`).join('')}</div></div>`).join(''):'<p class="text-center text-slate-500 py-8">Día libre. Añade un ejercicio 👇</p>';
     h+=`<button onclick="A.addW()" class="w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir ejercicio a ${lab(sel)}</button>`;
   }
   if(tab==='m'){
     const si=t=>{const i=SLOTS.indexOf(t);return i<0?99:i},list=[...PM(sel)].sort((a,b)=>si(a.t)-si(b.t)),pr=pM(sv,today),pct=Math.min(100,pr/GOAL*100);
-    h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between mb-2"><b>🥩 Proteína hoy (guardado)</b><span><b class="text-lime-400 text-lg">${pr}</b> / ${GOAL} g</span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${pr>=GOAL?'¡Meta alcanzada! 💪':'Faltan '+(GOAL-pr)+' g'} · ${kM(sv,today)} kcal consumidas</p></div>`+dayBar();
+    h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between mb-2 gap-2"><b class="text-sm">🥩 Proteína hoy (guardado)</b><span class="whitespace-nowrap"><b class="text-lime-400 text-lg">${pr}</b> <span class="text-xs text-slate-400">/ ${GOAL} g</span></span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${pr>=GOAL?'¡Meta alcanzada! 💪':'Faltan '+(GOAL-pr)+' g'} · ${kM(sv,today)} kcal consumidas</p></div>`+dayBar();
     h+=`<p class="text-xs text-slate-400 mb-2">${lab(sel)}: ${pM(D,sel)} g proteína · ${kM(D,sel)} kcal (borrador)</p>`;
-    h+=list.map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-3 flex items-center gap-3"><button onclick="A.ckM('${x.id}')" class="cb ${x.c?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="text-[11px] uppercase text-slate-500">${esc(x.t)}</p><p class="font-semibold truncate">${esc(x.d)}</p><p class="text-xs"><span class="text-lime-400">${x.p} g prot</span> · <span class="text-slate-400">${x.k} kcal</span></p></div><button class="ib" onclick="A.editM('${x.id}')">✏️</button><button class="ib" onclick="A.del('m','${x.id}')">🗑</button></div>`).join('')||'<p class="text-center text-slate-500 py-8">Sin comidas.</p>';
+    h+=list.map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-3 flex items-center gap-3"><button onclick="A.ckM('${x.id}')" class="cb ${x.c?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="text-[11px] uppercase text-slate-500">${esc(x.t)}</p><p class="font-semibold truncate">${esc(x.d)}</p><p class="text-xs"><span class="text-lime-400">${x.p} g prot</span> · <span class="text-slate-400">${x.k} kcal</span></p></div><div class="flex gap-1 shrink-0"><button class="ib" onclick="A.editM('${x.id}')">✏️</button><button class="ib" onclick="A.del('m','${x.id}')">🗑</button></div></div>`).join('')||'<p class="text-center text-slate-500 py-8">Sin comidas.</p>';
     h+=`<button onclick="A.addF()" class="w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir alimento a ${lab(sel)}</button><button onclick="A.bopen()" class="mt-3 w-full py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300">📚 Mi base de alimentos (${D.fd.length})</button>`;
   }
   if(tab==='s'){
     const tot=r=>D.sh.filter(r).reduce((a,x)=>a+x.q*x.u,0),T=tot(()=>1),B=tot(x=>x.b);
-    h+=`<div class="grid grid-cols-3 gap-3 mb-4">${card('Estimado',money(T),'text-white')}${card('Comprado',money(B),'text-lime-400')}${card('Pendiente',money(T-B),'text-orange-400')}</div>`;
+    h+=`<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">${card('Estimado',money(T),'text-white')}${card('Comprado',money(B),'text-lime-400')}${card('Pendiente',money(T-B),'text-orange-400')}</div>`;
     const cats=[...new Set([...CATS,...D.sh.map(x=>x.cat)])].filter(c=>D.sh.some(x=>x.cat===c));
     const fr=D.sh.filter(x=>x.o&&x.o!=='Comprado').length;h+=fr?`<p class="text-xs text-lime-400 mb-3">🌱 ${fr} producto(s) gratis (canchón, regalo o donado): no suman al gasto.</p>`:'';
     h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><b class="text-sm">Gasto por categoría</b>${cats.map(c=>{const v=tot(x=>x.cat===c);return `<div class="mt-2"><div class="flex justify-between text-xs"><span>${esc(c)}</span><span>${money(v)}</span></div><div class="h-2 bg-slate-900 rounded-full"><div class="h-2 bg-orange-400 rounded-full" style="width:${T?v/T*100:0}%"></div></div></div>`}).join('')||'<p class="text-xs text-slate-500 mt-1">Sin datos</p>'}</div>`;
-    h+=cats.map(c=>`<h3 class="text-xs uppercase text-slate-400 font-bold mt-4 mb-2">${esc(c)}</h3>`+D.sh.filter(x=>x.cat===c).map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-2 flex items-center gap-3"><button onclick="A.ckS('${x.id}')" class="cb ${x.b?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="font-semibold truncate ${x.b?'line-through text-slate-500':''}">${esc(x.n)}</p><p class="text-xs text-slate-400">${x.q} ${esc(x.un)} ${x.o&&x.o!=='Comprado'?`· <b class="text-lime-400">🌱 ${esc(x.o)} · gratis</b>`:`× ${money(x.u)} = <b class="text-white">${money(x.q*x.u)}</b>`}</p></div><button class="ib" onclick="A.editS('${x.id}')">✏️</button><button class="ib" onclick="A.del('s','${x.id}')">🗑</button></div>`).join('')).join('');
+    h+=cats.map(c=>`<h3 class="text-xs uppercase text-slate-400 font-bold mt-4 mb-2">${esc(c)}</h3>`+D.sh.filter(x=>x.cat===c).map(x=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-2 flex items-center gap-3"><button onclick="A.ckS('${x.id}')" class="cb ${x.b?'on':''}">✓</button><div class="flex-grow min-w-0"><p class="font-semibold truncate ${x.b?'line-through text-slate-500':''}">${esc(x.n)}</p><p class="text-xs text-slate-400">${x.q} ${esc(x.un)} ${x.o&&x.o!=='Comprado'?`· <b class="text-lime-400">🌱 ${esc(x.o)} · gratis</b>`:`× ${money(x.u)} = <b class="text-white">${money(x.q*x.u)}</b>`}</p></div><div class="flex gap-1 shrink-0"><button class="ib" onclick="A.editS('${x.id}')">✏️</button><button class="ib" onclick="A.del('s','${x.id}')">🗑</button></div></div>`).join('')).join('');
     h+=`<button onclick="A.addS()" class="mt-4 w-full py-3 border-2 border-dashed border-slate-600 rounded-xl text-slate-300 font-semibold">＋ Añadir producto</button>`;
   }
   if(tab==='r')h=rHTML();
   if(tab==='p')h=wHTML();
   if(tab==='h')h=hHTML();
   $('app').innerHTML=h;
-  const d=dirty();$('dirty').classList.toggle('hidden',!d);$('saveBtn').className='font-bold text-sm px-4 py-2 rounded-lg '+(d?'bg-lime-500 text-slate-900 animate-pulse':'bg-slate-700 text-slate-400');
+  const d=dirty();$('dirty').classList.toggle('hidden',!d);$('saveBtn').className='font-bold text-sm px-3 sm:px-4 py-2 rounded-lg '+(d?'bg-lime-500 text-slate-900 animate-pulse':'bg-slate-700 text-slate-400');
 }
 const wk=()=>Object.keys(D.pw).sort();
 function wHTML(){const ks=wk(),k=key(),cur=ks.length?D.pw[ks[ks.length-1]]:0,g=D.g,st=g.start||(ks.length?D.pw[ks[0]]:0),id=g.ideal;
@@ -181,12 +185,12 @@ function wHTML(){const ks=wk(),k=key(),cur=ks.length?D.pw[ks[ks.length-1]]:0,g=D
  if(id&&st&&cur&&st!==id){pct=Math.max(0,Math.min(100,(st-cur)/(st-id)*100));const rem=cur-id;msg=Math.abs(rem)<0.05?'¡Llegaste a tu peso ideal! 🎯':(rem>0?'Te faltan '+rem.toFixed(1)+' kg por bajar':'Te faltan '+(-rem).toFixed(1)+' kg por subir')}
  let h=D.pw[k]?'':'<div class="bg-amber-900/40 border border-amber-500 text-amber-200 text-sm rounded-xl p-3 mb-4">⏰ Aún no registras tu peso de hoy (pésate a las 6:00 am).</div>';
  h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><b class="text-sm">Registrar peso</b><div class="grid grid-cols-5 gap-2 mt-2"><input type="date" id="wd" value="${k}" max="${k}" class="col-span-2"><input type="number" id="wv" step="0.1" min="20" max="300" inputmode="decimal" placeholder="kg" class="col-span-2"><button onclick="A.addP()" class="bg-lime-500 text-slate-900 font-bold rounded-lg">OK</button></div><p id="we" class="text-red-400 text-xs mt-1 min-h-4"></p></div>`;
- h+=`<div class="grid grid-cols-3 gap-3 mb-3">${card('Actual',cur?cur+' kg':'—','text-white')}${card('Ideal',id?id+' kg':'—','text-lime-400')}${card('Inicial',st?st+' kg':'—','text-slate-300')}</div>`;
+ h+=`<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-3">${card('Actual',cur?cur+' kg':'—','text-white')}${card('Ideal',id?id+' kg':'—','text-lime-400')}${card('Inicial',st?st+' kg':'—','text-slate-300')}</div>`;
  h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between text-sm mb-2"><b>🎯 Progreso hacia tu meta</b><span class="text-lime-400 font-bold">${pct.toFixed(0)}%</span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${msg}</p><button onclick="A.goal()" class="ib mt-3">✏️ Editar meta</button></div>`;
  const pts=ks.slice(-30).map(x=>[x,D.pw[x]]);
  if(pts.length>1){const v=pts.map(p=>p[1]).concat(id?[id]:[]),mn=Math.min(...v)-0.5,mx=Math.max(...v)+0.5,X=i=>10+i*(280/(pts.length-1)),Y=y=>110-(y-mn)/(mx-mn)*100;
   h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-4"><svg viewBox="0 0 300 120" class="w-full">${id?`<line x1="10" x2="290" y1="${Y(id)}" y2="${Y(id)}" stroke="#84cc16" stroke-dasharray="4"/>`:''}<polyline fill="none" stroke="#fb923c" stroke-width="2" points="${pts.map((p,i)=>X(i)+','+Y(p[1])).join(' ')}"/>${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p[1])}" r="2.5" fill="#fb923c"/>`).join('')}</svg><p class="text-[11px] text-slate-500 text-center">Últimos ${pts.length} registros · línea verde = peso ideal</p></div>`}
- h+=`<table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Cambio</th><th></th></tr></thead><tbody>${ks.slice().reverse().map(x=>{const i=ks.indexOf(x),d=i?D.pw[x]-D.pw[ks[i-1]]:0;return `<tr class="border-t border-slate-800"><td class="p-2">${dn(x).slice(0,3)} ${show(x)}</td><td class="p-2 text-center font-semibold">${D.pw[x]} kg</td><td class="p-2 text-center ${d>0?'text-orange-400':d<0?'text-lime-400':'text-slate-500'}">${i?(d>0?'+':'')+d.toFixed(1):'—'}</td><td><button class="ib" onclick="A.delP('${x}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros</td></tr>'}</tbody></table>`;return h}
+ h+=`<table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Cambio</th><th></th></tr></thead><tbody>${ks.slice().reverse().map(x=>{const i=ks.indexOf(x),d=i?D.pw[x]-D.pw[ks[i-1]]:0;return `<tr class="border-t border-slate-800"><td class="p-2 text-xs sm:text-sm">${dn(x).slice(0,3)} ${show(x)}</td><td class="p-2 text-center font-semibold">${D.pw[x]} kg</td><td class="p-2 text-center ${d>0?'text-orange-400':d<0?'text-lime-400':'text-slate-500'}">${i?(d>0?'+':'')+d.toFixed(1):'—'}</td><td><button class="ib" onclick="A.delP('${x}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros</td></tr>'}</tbody></table>`;return h}
 function rHTML(){const sv=SV(),k=key(),ks=Object.keys(sv.pw).sort(),g=sv.g,ymd=t=>t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
  const days=[];for(let i=13;i>=0;i--){const t=new Date(k+'T12:00:00');t.setDate(t.getDate()-i);days.push(ymd(t))}
  const rec=days.filter(d=>sv.h[d]),av=f=>rec.length?Math.round(rec.reduce((a,d)=>a+f(sv.h[d]),0)/rec.length):0,pOK=rec.filter(d=>sv.h[d].p>=GOAL).length;
@@ -198,12 +202,12 @@ function rHTML(){const sv=SV(),k=key(),ks=Object.keys(sv.pw).sort(),g=sv.g,ymd=t
  const mx=Math.max(1,...days.map(d=>Math.max(sv.h[d]?.kb||0,sv.h[d]?.kc||0)));
  const bars=days.map((d,i)=>{const r=sv.h[d]||{kb:0,kc:0},x=i*21+4,H=v=>v/mx*90;return `<rect x="${x}" y="${100-H(r.kc)}" width="8" height="${H(r.kc)}" fill="#64748b"/><rect x="${x+9}" y="${100-H(r.kb)}" width="8" height="${H(r.kb)}" fill="#fb923c"/><text x="${x+9}" y="112" font-size="7" fill="#94a3b8" text-anchor="middle">${d.slice(8)}</text>`}).join('');
  return (anon&&CFG?`<div class="bg-sky-900/40 border border-sky-500 text-sky-100 text-sm rounded-xl p-3 mb-4 flex items-center justify-between gap-3"><span>🔐 Entra con Google para ver tus datos en cualquier dispositivo.</span><button onclick="A.google()" class="bg-sky-500 text-slate-900 font-bold rounded-lg px-3 py-1.5 shrink-0">Entrar</button></div>`:'')+`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between text-sm mb-2"><b>🎯 Tu meta de peso</b><span class="text-lime-400 font-bold">${pct.toFixed(0)}%</span></div><div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 bg-lime-500 rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-400 mt-2">${msg}</p></div>
- <div class="grid grid-cols-3 gap-3 mb-3">${card('Peso actual',cur?cur+' kg':'—','text-white')}${card('Cambio total',cur&&st?(ch>0?'+':'')+ch.toFixed(1)+' kg':'—',ch<=0?'text-lime-400':'text-orange-400')}${card('Racha',streak+' día(s)','text-lime-400')}</div>
- <div class="grid grid-cols-3 gap-3 mb-4">${card('Series semana',wp+'%','text-orange-400')}${card('Meta proteína',pOK+'/'+rec.length+' días','text-lime-400')}${card('Prom. proteína',av(r=>r.p)+' g','text-white')}</div>
+ <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-3">${card('Peso actual',cur?cur+' kg':'—','text-white')}${card('Cambio total',cur&&st?(ch>0?'+':'')+ch.toFixed(1)+' kg':'—',ch<=0?'text-lime-400':'text-orange-400')}${card('Racha',streak+' día(s)','text-lime-400')}</div>
+ <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">${card('Series semana',wp+'%','text-orange-400')}${card('Meta proteína',pOK+'/'+rec.length+' días','text-lime-400')}${card('Prom. proteína',av(r=>r.p)+' g','text-white')}</div>
  <div class="bg-slate-800 border border-slate-700 rounded-xl p-3"><b class="text-sm">Últimos 14 días</b><svg viewBox="0 0 300 116" class="w-full mt-2">${bars}</svg><p class="text-[11px] text-slate-400 text-center"><span style="color:#fb923c">■</span> quemadas (prom. ${av(r=>r.kb)} kcal) · <span style="color:#64748b">■</span> consumidas (prom. ${av(r=>r.kc)} kcal)</p></div>
  <p class="text-xs text-slate-500 mt-3">Se calcula con lo que guardaste (💾). Días con registro en los últimos 14: ${rec.length}.</p>`}
 function dayDetail(d){const ex=D.dw[d]||[],me=[...(D.dm[d]||[])],pw=D.pw[d],si=t=>{const i=SLOTS.indexOf(t);return i<0?99:i};me.sort((a,b)=>si(a.t)-si(b.t));
- let h=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between items-center mb-2"><b>${lab(d)}</b><button onclick="A.goDay('${d}')" class="ib">✏️ ${d<today?'Editar este día':'Ir a este día'}</button></div>`;
+ let h=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between items-center mb-2 gap-2"><b>${lab(d)}</b><button onclick="A.goDay('${d}')" class="ib text-xs">✏️ ${d<today?'Editar':'Ir'}</button></div>`;
  if(!ex.length&&!me.length&&!pw)return h+'<p class="text-sm text-slate-500">Sin registro este día.</p></div>';
  if(pw)h+=`<p class="text-sm mb-2">⚖️ Peso: <b>${pw} kg</b></p>`;
  h+='<p class="text-xs uppercase text-slate-500 mt-2 mb-1">Ejercicios</p>'+(ex.length?ex.map(x=>{const n=x.c.filter(Boolean).length;return `<p class="text-sm ${n?'text-lime-400':'text-slate-500'}">${n?'✓':'○'} ${esc(x.n)} · ${n}/${x.c.length} series${n?' · '+n*x.k+' kcal':''}</p>`}).join(''):'<p class="text-sm text-slate-500">—</p>');
@@ -214,28 +218,79 @@ function calHTML(){const k=key();if(!cm)cm=k.slice(0,7);if(!cd)cd=k;const[y,m]=c
   c+=`<button onclick="A.cday('${d}')" class="relative h-11 rounded-lg text-sm border ${d===cd?'bg-lime-500 text-slate-900 border-lime-500 font-bold':d===k?'border-lime-500 text-lime-400':'border-slate-700 text-slate-300'}">${i}<span class="absolute bottom-0.5 left-0 right-0 flex justify-center gap-0.5 text-[8px] leading-none">${ex?'<i class="ni" style="color:#fb923c">●</i>':''}${fo?'<i class="ni" style="color:#4d7c0f">●</i>':''}${wt?'<i class="ni" style="color:#38bdf8">●</i>':''}</span></button>`}
  return `<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-4"><div class="flex items-center justify-between mb-2"><button class="ib" onclick="A.cmv(-1)">‹</button><b>${MES[m-1]} ${y}</b><button class="ib" onclick="A.cmv(1)">›</button></div><div class="grid grid-cols-7 gap-1 text-center text-[10px] text-slate-500 mb-1">${['L','M','M','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div><div class="grid grid-cols-7 gap-1">${c}</div><p class="text-[10px] text-slate-500 mt-2"><span style="color:#fb923c">●</span> ejercicio · <span style="color:#4d7c0f">●</span> comida · <span style="color:#38bdf8">●</span> peso · toca un día para ver el detalle</p></div>`+dayDetail(cd)}
 function hHTML(){const sv=SV(),ks=[...new Set([...Object.keys(sv.h),...Object.keys(sv.pw)])].sort().reverse();
- const rows=ks.map(k=>{const r=sv.h[k],b=r?r.kc-r.kb:null;return `<tr class="border-t border-slate-800"><td class="p-2 whitespace-nowrap">${dn(k).slice(0,3)} ${show(k)}</td><td class="p-2 text-center">${sv.pw[k]?sv.pw[k]+' kg':'—'}</td><td class="p-2 text-center text-orange-400">${r?r.kb:'—'}</td><td class="p-2 text-center">${r?r.kc:'—'}</td><td class="p-2 text-center ${b>0?'text-orange-400':'text-lime-400'}">${r?(b>0?'+':'')+b:'—'}</td><td class="p-2 text-center text-lime-400">${r?r.p+' g':'—'}</td></tr>`}).join('');
+ const rows=ks.map(k=>{const r=sv.h[k],b=r?r.kc-r.kb:null;return `<tr class="border-t border-slate-800"><td class="p-2 whitespace-nowrap text-xs sm:text-sm">${dn(k).slice(0,3)} ${show(k)}</td><td class="p-2 text-center">${sv.pw[k]?sv.pw[k]+' kg':'—'}</td><td class="p-2 text-center text-orange-400">${r?r.kb:'—'}</td><td class="p-2 text-center">${r?r.kc:'—'}</td><td class="p-2 text-center ${b>0?'text-orange-400':'text-lime-400'}">${r?(b>0?'+':'')+b:'—'}</td><td class="p-2 text-center text-lime-400">${r?r.p+' g':'—'}</td></tr>`}).join('');
  return calHTML()+`<h3 class="font-bold text-sm mb-2">Resumen por fecha</h3><p class="text-xs text-slate-400 mb-3">Se guarda un resumen del día cada vez que pulsas 💾 Guardar. Fechas con calendario de Perú (America/Lima). Balance = kcal consumidas − quemadas.</p><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Quemadas</th><th class="p-2">Consumidas</th><th class="p-2">Balance</th><th class="p-2">Proteína</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="p-6 text-center text-slate-500">Aún no hay historial. Marca tus checks y pulsa Guardar.</td></tr>'}</tbody></table></div>`}
 function setSt(t){$('st').textContent=t+(who?' · '+who:'')}
 function push(){if(docRef)setDoc(docRef,{json:saved,updated:Date.now()}).then(()=>setSt('☁️ Sincronizado')).catch(e=>setSt('⚠️ Error nube'))}
 const sc=j=>{const o=JSON.parse(j);return Object.keys(o.h||{}).length+Object.keys(o.pw||{}).length+Math.abs((o.fd||[]).length-25)+Math.max(0,Object.keys(o.dw||{}).length-2)};
 const useCloud=j=>{try{localStorage.setItem(KEY+'_bak',saved)}catch(e){}D=norm(JSON.parse(j));saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}render()};
-function acct(u){anon=!!u.isAnonymous;who=anon?'':(u.email||'');const b=$('acct');b.textContent=anon?'🔐 Google':'👤';b.title=who||'Cuenta anónima'}
-async function initFB(){if(!CFG){setSt('💾 Local');$('acct').classList.add('hidden');return}
- try{const app=initializeApp(CFG);auth=getAuth(app);const db=getFirestore(app);
-  onAuthStateChanged(auth,async u=>{
-   if(!u){try{if(typeof __initial_auth_token!=='undefined')await signInWithCustomToken(auth,__initial_auth_token);else await signInAnonymously(auth)}catch(e){setSt('⚠️ '+String(e.code||e.message).slice(0,28))}return}
-   acct(u);docRef=doc(db,'artifacts',APPID,'users',u.uid,'appState','mainData');if(unsub)unsub();
-   unsub=onSnapshot(docRef,sn=>{if(!sn.exists()){pend=null;push();return}
-    const j=sn.data().json;
-    if(pend!==null){const loc=pend;pend=null;
-     if(j&&j!==loc){let a=0,b=0;try{a=sc(loc);b=sc(j)}catch(e){}
-      const keep=a>0&&b===0?true:(a===0?false:confirm('Hay datos distintos:\n• Este dispositivo: '+a+' registro(s)\n• Tu cuenta de Google: '+b+' registro(s)\n\nAceptar = conservar los de ESTE dispositivo (reemplaza los de la cuenta)\nCancelar = conservar los de tu CUENTA (los de este dispositivo quedan como respaldo)'));
-      if(keep){D=norm(JSON.parse(loc));saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}push();render();toast('✅ Se conservaron los datos de este dispositivo')}else{useCloud(j);toast('✅ Se cargaron los datos de tu cuenta')}}
-     setSt('☁️ Sincronizado');return}
-    if(j&&j!==saved&&!dirty()){try{useCloud(j)}catch(e){}}
-    setSt('☁️ Sincronizado')},()=>setSt('⚠️ Sin conexión'));render()})
- }catch(e){setSt('⚠️ Firebase: '+String(e.message).slice(0,30))}}
+function acct(u){anon=!!u.isAnonymous;who=anon?'':(u.email||'');const b=$('acct');b.textContent=anon?'🔐':'👤';b.title=who||'Cuenta anónima'}
+
+// === DETECCIÓN MÓVIL PARA REDIRECT ===
+const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.innerWidth < 900);
+
+async function initFB(){
+  if(!CFG){setSt('💾 Local');$('acct').classList.add('hidden');return}
+  try{
+    const app=initializeApp(CFG);auth=getAuth(app);db=getFirestore(app);
+    
+    // Forzar persistencia local explícita
+    try { await setPersistence(auth, browserLocalPersistence); } catch(e){ console.warn('persistencia', e); }
+
+    onAuthStateChanged(auth, async u=>{
+      if(!u){
+        try{
+          if(typeof __initial_auth_token!=='undefined') await signInWithCustomToken(auth,__initial_auth_token);
+          else await signInAnonymously(auth);
+        }catch(e){setSt('⚠️ '+String(e.code||e.message).slice(0,28))}
+        return
+      }
+      acct(u);
+      docRef=doc(db,'artifacts',APPID,'users',u.uid,'appState','mainData');
+      if(unsub)unsub();
+      unsub=onSnapshot(docRef,sn=>{
+        if(!sn.exists()){pend=null;push();return}
+        const j=sn.data().json;
+        if(pend!==null){
+          const loc=pend;pend=null;
+          if(j&&j!==loc){
+            let a=0,b=0;try{a=sc(loc);b=sc(j)}catch(e){}
+            const keep=a>0&&b===0?true:(a===0?false:confirm('Hay datos distintos:\n• Este dispositivo: '+a+' registro(s)\n• Tu cuenta de Google: '+b+' registro(s)\n\nAceptar = conservar los de ESTE dispositivo (reemplaza los de la cuenta)\nCancelar = conservar los de tu CUENTA (los de este dispositivo quedan como respaldo)'));
+            if(keep){D=norm(JSON.parse(loc));saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}push();render();toast('✅ Se conservaron los datos de este dispositivo')}
+            else{useCloud(j);toast('✅ Se cargaron los datos de tu cuenta')}
+          }
+          setSt('☁️ Sincronizado');return
+        }
+        if(j&&j!==saved&&!dirty()){try{useCloud(j)}catch(e){}}
+        setSt('☁️ Sincronizado')
+      },()=>setSt('⚠️ Sin conexión'));
+      render();
+    });
+
+    // Manejar resultado del redirect (cuando vuelve de Google)
+    if(!redirectHandled){
+      redirectHandled = true;
+      getRedirectResult(auth).then(async (result) => {
+        if (result && result.user) {
+          acct(result.user);
+          // Si el usuario se vinculó desde anónimo, los datos locales ya están aquí
+          // Empujamos al cloud para asegurar
+          if (result.operationType === 'link') {
+            push();
+          }
+          render();
+          toast('✅ Sesión de Google activa');
+        }
+      }).catch((error) => {
+        console.error('Redirect result error:', error);
+        if (error.code && error.code !== 'auth/no-auth-event' && error.code !== 'auth/cancelled-popup-request') {
+          setSt('⚠️ ' + String(error.code || error.message).slice(0, 28));
+        }
+      });
+    }
+  }catch(e){setSt('⚠️ Firebase: '+String(e.message).slice(0,30))}
+}
+
 function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hidden');setTimeout(()=>e.classList.add('hidden'),2200)}
 function form(title,fields,vals,ok){cfg={fields,ok};$('mt').textContent=title;$('me').textContent='';
   $('mb').innerHTML=fields.map(f=>`<label class="block text-xs text-slate-400">${f.l}${f.t==='select'?`<select name="${f.k}">${f.o.map(o=>`<option ${o===vals[f.k]?'selected':''}>${esc(o)}</option>`).join('')}</select>`:`<input name="${f.k}" type="${f.t}" ${f.t==='number'?'step="any" min="0" inputmode="decimal"':''} value="${esc(vals[f.k]??'')}">`}</label>`).join('');
@@ -243,10 +298,44 @@ function form(title,fields,vals,ok){cfg={fields,ok};$('mt').textContent=title;$(
 const find=(arr,id)=>arr.find(x=>x.id===id);
 const A={
  tab(t){tab=t;render()},day(d){if(d!==ext)ext=null;sel=d;render()},
- async google(){if(!auth){toast('Firebase no está configurado');return}const p=new GoogleAuthProvider();
-  try{if(auth.currentUser&&auth.currentUser.isAnonymous){await linkWithPopup(auth.currentUser,p);acct(auth.currentUser);push();render();toast('✅ Cuenta de Google vinculada')}else await signInWithPopup(auth,p)}
-  catch(e){if(e.code==='auth/credential-already-in-use'||e.code==='auth/email-already-in-use'){const c=GoogleAuthProvider.credentialFromError(e);if(c&&confirm('Esta cuenta de Google ya se usa en otro dispositivo. Compararé los datos de aquí con los de la cuenta y tú eliges cuáles conservar. ¿Continuar?')){try{localStorage.setItem(KEY+'_bak',JSON.stringify(D))}catch(_){}pend=JSON.stringify(D);try{await signInWithCredential(auth,c)}catch(e2){pend=null;toast('⚠️ '+(e2.code||e2.message))}}}
-   else if(e.code==='auth/popup-blocked')toast('⚠️ Permite las ventanas emergentes e inténtalo de nuevo');else if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request')toast('⚠️ '+(e.code||e.message))}},
+ async google(){
+   if(!auth){toast('Firebase no está configurado');return}
+   const p=new GoogleAuthProvider();
+   const useRedirect = isMobileDevice();
+   try{
+     if(auth.currentUser && auth.currentUser.isAnonymous){
+       if(useRedirect){
+         // En móvil, vincular anónimo con Google vía redirect
+         await linkWithRedirect(auth.currentUser, p);
+         return; // La página se recargará y getRedirectResult/onAuthStateChanged lo detectará
+       } else {
+         await linkWithPopup(auth.currentUser,p);
+         acct(auth.currentUser);push();render();toast('✅ Cuenta de Google vinculada');
+       }
+     } else {
+       if(useRedirect){
+         await signInWithRedirect(auth,p);
+         return; // Recarga y onAuthStateChanged detecta sesión
+       } else {
+         await signInWithPopup(auth,p);
+       }
+     }
+   }
+   catch(e){
+     if(e.code==='auth/credential-already-in-use'||e.code==='auth/email-already-in-use'){
+       const c=GoogleAuthProvider.credentialFromError(e);
+       if(c&&confirm('Esta cuenta de Google ya se usa en otro dispositivo. Compararé los datos de aquí con los de la cuenta y tú eliges cuáles conservar. ¿Continuar?')){
+         try{localStorage.setItem(KEY+'_bak',JSON.stringify(D))}catch(_){}
+         pend=JSON.stringify(D);
+         try{await signInWithCredential(auth,c)}catch(e2){pend=null;toast('⚠️ '+(e2.code||e2.message))}
+       }
+     }
+     else if(e.code==='auth/popup-blocked')toast('⚠️ Permite las ventanas emergentes e inténtalo de nuevo');
+     else if(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'){/* silencioso */}
+     else if(e.code==='auth/redirect-cancelled-by-user'){/* silencioso */}
+     else toast('⚠️ '+(e.code||e.message));
+   }
+ },
  acct(){if(!auth)return;if(anon)A.google();else if(confirm('Sesión: '+who+'\n¿Cerrar sesión? Los datos de este dispositivo se borrarán de aquí; seguirán en tu cuenta.'))A.out()},
  async out(){try{localStorage.setItem(KEY+'_bak',JSON.stringify(D))}catch(e){}try{await signOut(auth)}catch(e){}D=norm(def());saved=JSON.stringify(D);try{localStorage.removeItem(KEY)}catch(e){}who='';sel=today;render()},
  cmv(n){const[y,m]=cm.split('-').map(Number),t=new Date(y,m-1+n,1);cm=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');render()},
