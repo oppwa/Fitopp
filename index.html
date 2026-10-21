@@ -14,6 +14,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#0f172a;color:#f8fafc;-we
 .cb.on{background:#84cc16;border-color:#84cc16;color:#0f172a;font-weight:700}
 .ib{padding:6px 10px;border-radius:8px;font-size:14px;background:#1e293b;border:1px solid #334155;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
 .ib:hover{border-color:#84cc16}
+.ib.sm{padding:4px 6px;min-height:32px;font-size:12px}
 input,select{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;width:100%;color:#fff;outline:none;font-size:16px}
 @media(min-width:640px){input,select{font-size:14px;padding:8px}}
 input:focus,select:focus{border-color:#84cc16}
@@ -190,7 +191,7 @@ function wHTML(){const ks=wk(),k=key(),cur=ks.length?D.pw[ks[ks.length-1]]:0,g=D
  const pts=ks.slice(-30).map(x=>[x,D.pw[x]]);
  if(pts.length>1){const v=pts.map(p=>p[1]).concat(id?[id]:[]),mn=Math.min(...v)-0.5,mx=Math.max(...v)+0.5,X=i=>10+i*(280/(pts.length-1)),Y=y=>110-(y-mn)/(mx-mn)*100;
   h+=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-4"><svg viewBox="0 0 300 120" class="w-full">${id?`<line x1="10" x2="290" y1="${Y(id)}" y2="${Y(id)}" stroke="#84cc16" stroke-dasharray="4"/>`:''}<polyline fill="none" stroke="#fb923c" stroke-width="2" points="${pts.map((p,i)=>X(i)+','+Y(p[1])).join(' ')}"/>${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p[1])}" r="2.5" fill="#fb923c"/>`).join('')}</svg><p class="text-[11px] text-slate-500 text-center">Últimos ${pts.length} registros · línea verde = peso ideal</p></div>`}
- h+=`<table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Cambio</th><th></th></tr></thead><tbody>${ks.slice().reverse().map(x=>{const i=ks.indexOf(x),d=i?D.pw[x]-D.pw[ks[i-1]]:0;return `<tr class="border-t border-slate-800"><td class="p-2 text-xs sm:text-sm">${dn(x).slice(0,3)} ${show(x)}</td><td class="p-2 text-center font-semibold">${D.pw[x]} kg</td><td class="p-2 text-center ${d>0?'text-orange-400':d<0?'text-lime-400':'text-slate-500'}">${i?(d>0?'+':'')+d.toFixed(1):'—'}</td><td><button class="ib" onclick="A.delP('${x}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros</td></tr>'}</tbody></table>`;return h}
+ h+=`<table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Cambio</th><th></th></tr></thead><tbody>${ks.slice().reverse().map(x=>{const i=ks.indexOf(x),d=i?D.pw[x]-D.pw[ks[i-1]]:0;return `<tr class="border-t border-slate-800"><td class="p-2 text-xs sm:text-sm">${dn(x).slice(0,3)} ${show(x)}</td><td class="p-2 text-center font-semibold">${D.pw[x]} kg</td><td class="p-2 text-center ${d>0?'text-orange-400':d<0?'text-lime-400':'text-slate-500'}">${i?(d>0?'+':'')+d.toFixed(1):'—'}</td><td><button class="ib sm" onclick="A.delP('${x}')">🗑</button></td></tr>`}).join('')||'<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin registros</td></tr>'}</tbody></table>`;return h}
 function rHTML(){const sv=SV(),k=key(),ks=Object.keys(sv.pw).sort(),g=sv.g,ymd=t=>t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
  const days=[];for(let i=13;i>=0;i--){const t=new Date(k+'T12:00:00');t.setDate(t.getDate()-i);days.push(ymd(t))}
  const rec=days.filter(d=>sv.h[d]),av=f=>rec.length?Math.round(rec.reduce((a,d)=>a+f(sv.h[d]),0)/rec.length):0,pOK=rec.filter(d=>sv.h[d].p>=GOAL).length;
@@ -206,35 +207,83 @@ function rHTML(){const sv=SV(),k=key(),ks=Object.keys(sv.pw).sort(),g=sv.g,ymd=t
  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">${card('Series semana',wp+'%','text-orange-400')}${card('Meta proteína',pOK+'/'+rec.length+' días','text-lime-400')}${card('Prom. proteína',av(r=>r.p)+' g','text-white')}</div>
  <div class="bg-slate-800 border border-slate-700 rounded-xl p-3"><b class="text-sm">Últimos 14 días</b><svg viewBox="0 0 300 116" class="w-full mt-2">${bars}</svg><p class="text-[11px] text-slate-400 text-center"><span style="color:#fb923c">■</span> quemadas (prom. ${av(r=>r.kb)} kcal) · <span style="color:#64748b">■</span> consumidas (prom. ${av(r=>r.kc)} kcal)</p></div>
  <p class="text-xs text-slate-500 mt-3">Se calcula con lo que guardaste (💾). Días con registro en los últimos 14: ${rec.length}.</p>`}
-function dayDetail(d){const ex=D.dw[d]||[],me=[...(D.dm[d]||[])],pw=D.pw[d],si=t=>{const i=SLOTS.indexOf(t);return i<0?99:i};me.sort((a,b)=>si(a.t)-si(b.t));
- let h=`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between items-center mb-2 gap-2"><b>${lab(d)}</b><button onclick="A.goDay('${d}')" class="ib text-xs">✏️ ${d<today?'Editar':'Ir'}</button></div>`;
- if(!ex.length&&!me.length&&!pw)return h+'<p class="text-sm text-slate-500">Sin registro este día.</p></div>';
- if(pw)h+=`<p class="text-sm mb-2">⚖️ Peso: <b>${pw} kg</b></p>`;
- h+='<p class="text-xs uppercase text-slate-500 mt-2 mb-1">Ejercicios</p>'+(ex.length?ex.map(x=>{const n=x.c.filter(Boolean).length;return `<p class="text-sm ${n?'text-lime-400':'text-slate-500'}">${n?'✓':'○'} ${esc(x.n)} · ${n}/${x.c.length} series${n?' · '+n*x.k+' kcal':''}</p>`}).join(''):'<p class="text-sm text-slate-500">—</p>');
- h+='<p class="text-xs uppercase text-slate-500 mt-3 mb-1">Comidas</p>'+(me.length?me.map(x=>`<p class="text-sm ${x.c?'text-lime-400':'text-slate-500'}">${x.c?'✓':'○'} ${esc(x.t)}: ${esc(x.d)} · ${x.p} g prot · ${x.k} kcal</p>`).join(''):'<p class="text-sm text-slate-500">—</p>');
- return h+`<p class="text-xs text-slate-400 mt-3">Quemadas ${kW(D,d)} kcal · Consumidas ${kM(D,d)} kcal · Proteína ${pM(D,d)} g <span class="text-slate-500">(✓ hecho, ○ no marcado)</span></p></div>`}
+
+/* ========== HISTORIAL DINÁMICO ========== */
+function dayDetail(d){
+  const ex = D.dw[d] || [];
+  const me = [...(D.dm[d] || [])];
+  const pw = D.pw[d];
+  const si = t => { const i = SLOTS.indexOf(t); return i < 0 ? 99 : i; };
+  me.sort((a, b) => si(a.t) - si(b.t));
+
+  let h = `<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-4"><div class="flex justify-between items-center mb-2 gap-2"><b>${lab(d)}</b><button onclick="A.goDay('${d}')" class="ib text-xs">✏️ ${d < today ? 'Editar' : 'Ir'}</button></div>`;
+
+  if (!ex.length && !me.length && !pw) return h + '<p class="text-sm text-slate-500">Sin registro este día.</p></div>';
+
+  if (pw) h += `<p class="text-sm mb-3">⚖️ Peso: <b>${pw} kg</b></p>`;
+
+  h += '<p class="text-xs uppercase text-slate-500 mt-3 mb-2">Ejercicios</p>';
+  if (ex.length) {
+    h += ex.map(x => `
+      <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-2 mb-2 flex items-center gap-2">
+        <div class="flex-grow min-w-0">
+          <p class="text-sm font-semibold truncate ${x.c.some(Boolean) ? 'text-lime-400' : 'text-slate-300'}">${esc(x.n)}</p>
+          <p class="text-[11px] text-slate-500">${x.s} serie(s) · +${x.k} kcal/serie</p>
+        </div>
+        <div class="flex gap-1 shrink-0 flex-wrap justify-end">
+          ${x.c.map((c, i) => `<button onclick="A.ck('${x.id}',${i})" class="cb ${c ? 'on' : ''}">✓</button>`).join('')}
+          <button class="ib sm" onclick="A.editW('${x.id}')">✏️</button>
+          <button class="ib sm" onclick="A.del('w','${x.id}')">🗑</button>
+        </div>
+      </div>`).join('');
+  } else {
+    h += '<p class="text-sm text-slate-500 mb-2">—</p>';
+  }
+
+  h += '<p class="text-xs uppercase text-slate-500 mt-3 mb-2">Comidas</p>';
+  if (me.length) {
+    h += me.map(x => `
+      <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-2 mb-2 flex items-center gap-2">
+        <button onclick="A.ckM('${x.id}')" class="cb ${x.c ? 'on' : ''}">✓</button>
+        <div class="flex-grow min-w-0">
+          <p class="text-[10px] uppercase text-slate-500 leading-tight">${esc(x.t)}</p>
+          <p class="text-sm font-semibold truncate ${x.c ? 'text-lime-400' : 'text-slate-300'}">${esc(x.d)}</p>
+          <p class="text-[11px] text-slate-400"><span class="text-lime-400">${x.p} g prot</span> · ${x.k} kcal</p>
+        </div>
+        <div class="flex gap-1 shrink-0">
+          <button class="ib sm" onclick="A.editM('${x.id}')">✏️</button>
+          <button class="ib sm" onclick="A.del('m','${x.id}')">🗑</button>
+        </div>
+      </div>`).join('');
+  } else {
+    h += '<p class="text-sm text-slate-500 mb-2">—</p>';
+  }
+
+  h += `<p class="text-xs text-slate-400 mt-3">Quemadas ${kW(D,d)} kcal · Consumidas ${kM(D,d)} kcal · Proteína ${pM(D,d)} g</p></div>`;
+  return h;
+}
+
 function calHTML(){const k=key();if(!cm)cm=k.slice(0,7);if(!cd)cd=k;const[y,m]=cm.split('-').map(Number),off=(new Date(y,m-1,1).getDay()+6)%7,n=new Date(y,m,0).getDate();let c='';for(let i=0;i<off;i++)c+='<div></div>';
  for(let i=1;i<=n;i++){const d=cm+'-'+String(i).padStart(2,'0'),ex=(D.dw[d]||[]).some(x=>x.c.some(Boolean)),fo=(D.dm[d]||[]).some(x=>x.c),wt=D.pw[d];
   c+=`<button onclick="A.cday('${d}')" class="relative h-11 rounded-lg text-sm border ${d===cd?'bg-lime-500 text-slate-900 border-lime-500 font-bold':d===k?'border-lime-500 text-lime-400':'border-slate-700 text-slate-300'}">${i}<span class="absolute bottom-0.5 left-0 right-0 flex justify-center gap-0.5 text-[8px] leading-none">${ex?'<i class="ni" style="color:#fb923c">●</i>':''}${fo?'<i class="ni" style="color:#4d7c0f">●</i>':''}${wt?'<i class="ni" style="color:#38bdf8">●</i>':''}</span></button>`}
  return `<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-4"><div class="flex items-center justify-between mb-2"><button class="ib" onclick="A.cmv(-1)">‹</button><b>${MES[m-1]} ${y}</b><button class="ib" onclick="A.cmv(1)">›</button></div><div class="grid grid-cols-7 gap-1 text-center text-[10px] text-slate-500 mb-1">${['L','M','M','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div><div class="grid grid-cols-7 gap-1">${c}</div><p class="text-[10px] text-slate-500 mt-2"><span style="color:#fb923c">●</span> ejercicio · <span style="color:#4d7c0f">●</span> comida · <span style="color:#38bdf8">●</span> peso · toca un día para ver el detalle</p></div>`+dayDetail(cd)}
+
 function hHTML(){const sv=SV(),ks=[...new Set([...Object.keys(sv.h),...Object.keys(sv.pw)])].sort().reverse();
  const rows=ks.map(k=>{const r=sv.h[k],b=r?r.kc-r.kb:null;return `<tr class="border-t border-slate-800"><td class="p-2 whitespace-nowrap text-xs sm:text-sm">${dn(k).slice(0,3)} ${show(k)}</td><td class="p-2 text-center">${sv.pw[k]?sv.pw[k]+' kg':'—'}</td><td class="p-2 text-center text-orange-400">${r?r.kb:'—'}</td><td class="p-2 text-center">${r?r.kc:'—'}</td><td class="p-2 text-center ${b>0?'text-orange-400':'text-lime-400'}">${r?(b>0?'+':'')+b:'—'}</td><td class="p-2 text-center text-lime-400">${r?r.p+' g':'—'}</td></tr>`}).join('');
- return calHTML()+`<h3 class="font-bold text-sm mb-2">Resumen por fecha</h3><p class="text-xs text-slate-400 mb-3">Se guarda un resumen del día cada vez que pulsas 💾 Guardar. Fechas con calendario de Perú (America/Lima). Balance = kcal consumidas − quemadas.</p><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Quemadas</th><th class="p-2">Consumidas</th><th class="p-2">Balance</th><th class="p-2">Proteína</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="p-6 text-center text-slate-500">Aún no hay historial. Marca tus checks y pulsa Guardar.</td></tr>'}</tbody></table></div>`}
+ return calHTML()+`<h3 class="font-bold text-sm mb-2 mt-4">Resumen por fecha</h3><p class="text-xs text-slate-400 mb-3">Se guarda un resumen del día cada vez que pulsas 💾 Guardar. Fechas con calendario de Perú (America/Lima). Balance = kcal consumidas − quemadas.</p><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-xs text-slate-400"><tr><th class="text-left p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Quemadas</th><th class="p-2">Consumidas</th><th class="p-2">Balance</th><th class="p-2">Proteína</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="p-6 text-center text-slate-500">Aún no hay historial. Marca tus checks y pulsa Guardar.</td></tr>'}</tbody></table></div>`}
+
 function setSt(t){$('st').textContent=t+(who?' · '+who:'')}
 function push(){if(docRef)setDoc(docRef,{json:saved,updated:Date.now()}).then(()=>setSt('☁️ Sincronizado')).catch(e=>setSt('⚠️ Error nube'))}
 const sc=j=>{const o=JSON.parse(j);return Object.keys(o.h||{}).length+Object.keys(o.pw||{}).length+Math.abs((o.fd||[]).length-25)+Math.max(0,Object.keys(o.dw||{}).length-2)};
 const useCloud=j=>{try{localStorage.setItem(KEY+'_bak',saved)}catch(e){}D=norm(JSON.parse(j));saved=JSON.stringify(D);try{localStorage.setItem(KEY,saved)}catch(e){}render()};
 function acct(u){anon=!!u.isAnonymous;who=anon?'':(u.email||'');const b=$('acct');b.textContent=anon?'🔐':'👤';b.title=who||'Cuenta anónima'}
 
-// === DETECCIÓN MÓVIL PARA REDIRECT ===
 const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.innerWidth < 900);
 
 async function initFB(){
   if(!CFG){setSt('💾 Local');$('acct').classList.add('hidden');return}
   try{
     const app=initializeApp(CFG);auth=getAuth(app);db=getFirestore(app);
-    
-    // Forzar persistencia local explícita
     try { await setPersistence(auth, browserLocalPersistence); } catch(e){ console.warn('persistencia', e); }
 
     onAuthStateChanged(auth, async u=>{
@@ -267,17 +316,12 @@ async function initFB(){
       render();
     });
 
-    // Manejar resultado del redirect (cuando vuelve de Google)
     if(!redirectHandled){
       redirectHandled = true;
       getRedirectResult(auth).then(async (result) => {
         if (result && result.user) {
           acct(result.user);
-          // Si el usuario se vinculó desde anónimo, los datos locales ya están aquí
-          // Empujamos al cloud para asegurar
-          if (result.operationType === 'link') {
-            push();
-          }
+          if (result.operationType === 'link') push();
           render();
           toast('✅ Sesión de Google activa');
         }
@@ -305,9 +349,8 @@ const A={
    try{
      if(auth.currentUser && auth.currentUser.isAnonymous){
        if(useRedirect){
-         // En móvil, vincular anónimo con Google vía redirect
          await linkWithRedirect(auth.currentUser, p);
-         return; // La página se recargará y getRedirectResult/onAuthStateChanged lo detectará
+         return;
        } else {
          await linkWithPopup(auth.currentUser,p);
          acct(auth.currentUser);push();render();toast('✅ Cuenta de Google vinculada');
@@ -315,7 +358,7 @@ const A={
      } else {
        if(useRedirect){
          await signInWithRedirect(auth,p);
-         return; // Recarga y onAuthStateChanged detecta sesión
+         return;
        } else {
          await signInWithPopup(auth,p);
        }
@@ -331,8 +374,8 @@ const A={
        }
      }
      else if(e.code==='auth/popup-blocked')toast('⚠️ Permite las ventanas emergentes e inténtalo de nuevo');
-     else if(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'){/* silencioso */}
-     else if(e.code==='auth/redirect-cancelled-by-user'){/* silencioso */}
+     else if(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'){}
+     else if(e.code==='auth/redirect-cancelled-by-user'){}
      else toast('⚠️ '+(e.code||e.message));
    }
  },
@@ -377,7 +420,7 @@ const A={
   if(e)Object.assign(e,{t:$('fs').value,d,p,k});else PM(sel).push(M($('fs').value,d,p,k));A.fclose();render()},
  newF(n){form('Nuevo alimento o plato',[{k:'n',l:'Nombre',t:'text',req:1},{k:'u',l:'Porción (1 taza, 1 unidad, 100 g, 1 plato)',t:'text',req:1},{k:'p',l:'Proteína por porción (g)',t:'number'},{k:'k',l:'Calorías por porción (kcal)',t:'number'}],{n:(n||'').trim(),u:'1 unidad'},v=>{const f={id:uid(),n:v.n,u:v.u,p:v.p,k:v.k};D.fd.push(f);fsel=f.id;if(!$('fm').classList.contains('hidden')){A.fsearch();A.fprev()}if(!$('bm').classList.contains('hidden'))A.bl()})},
  bopen(){$('bq').value='';A.bl();$('bm').classList.remove('hidden')},bclose(){$('bm').classList.add('hidden')},
- bl(){const q=nz($('bq').value.trim());$('bl').innerHTML=D.fd.filter(f=>!q||nz(f.n).includes(q)).sort((a,b)=>nz(a.n)<nz(b.n)?-1:1).map(f=>`<div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2"><div class="flex-grow min-w-0 text-sm"><b class="truncate block">${esc(f.n)}</b><span class="text-xs text-slate-400">${esc(f.u)} · ${f.p} g prot · ${f.k} kcal</span></div><button class="ib" onclick="A.editF('${f.id}')">✏️</button><button class="ib" onclick="A.delF('${f.id}')">🗑</button></div>`).join('')||'<p class="text-sm text-slate-500 text-center py-4">Sin resultados</p>'},
+ bl(){const q=nz($('bq').value.trim());$('bl').innerHTML=D.fd.filter(f=>!q||nz(f.n).includes(q)).sort((a,b)=>nz(a.n)<nz(b.n)?-1:1).map(f=>`<div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-2"><div class="flex-grow min-w-0 text-sm"><b class="truncate block">${esc(f.n)}</b><span class="text-xs text-slate-400">${esc(f.u)} · ${f.p} g prot · ${f.k} kcal</span></div><button class="ib sm" onclick="A.editF('${f.id}')">✏️</button><button class="ib sm" onclick="A.delF('${f.id}')">🗑</button></div>`).join('')||'<p class="text-sm text-slate-500 text-center py-4">Sin resultados</p>'},
  editF(id){const f=find(D.fd,id);form('Editar alimento',[{k:'n',l:'Nombre',t:'text',req:1},{k:'u',l:'Porción',t:'text',req:1},{k:'p',l:'Proteína por porción (g)',t:'number'},{k:'k',l:'Calorías por porción (kcal)',t:'number'}],f,v=>{Object.assign(f,v);A.bl()})},
  delF(id){if(confirm('¿Eliminar de la base? Las comidas ya añadidas no cambian.')){D.fd=D.fd.filter(x=>x.id!==id);A.bl();render()}},
  addM(){form('Nuevo alimento · '+lab(sel),[{k:'t',l:'Comida',t:'select',o:SLOTS},{k:'d',l:'Descripción',t:'text',req:1},{k:'p',l:'Proteína (g)',t:'number'},{k:'k',l:'Calorías (kcal)',t:'number'}],{t:'Snack'},v=>PM(sel).push(M(v.t,v.d,v.p,v.k)))},
